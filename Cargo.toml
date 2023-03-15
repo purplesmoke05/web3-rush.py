@@ -17,7 +17,7 @@ name = "web3_rush"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.17.1", features = ["extension-module", "num-bigint"] }
+pyo3 = { version = "0.17.1", features = ["macros", "extension-module", "num-bigint"] }
 pyo3-asyncio = { version = "0.17.0", features = ["attributes", "async-std-runtime"] }
 web3 = "0.18.0"
 serde = "^1.0.153"
@@ -32,3 +32,16 @@ accessors = "0.0.3"
 num-bigint = "0.4.3"
 solders-macros = "0.14.4"
 ruint = { version = "1.7.0", features = ["primitive-types", "pyo3"] }
+dict_derive = "0.4.0"
+struct-convert = "1.2.7"
+derivative = "2.2.0"
+derive-from-ext = "0.2.0"
+web3-rush-macros = { workspace = true }
+inter-struct = "0.2.0"
+thinwrap = "1.0.0"
+
+[workspace]
+members = [".", "macros"]
+
+[workspace.dependencies]
+web3-rush-macros = { path = "./macros", version = "0.1.0" }

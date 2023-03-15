@@ -13,6 +13,7 @@ use pyo3::{prelude::*};
 use tokio::runtime::Runtime;
 use types::Address;
 use types::AnyStr;
+use types::BlockId;
 use types::BlockNumberParser;
 use types::FeeHistory;
 use utils::add_0x_prefix;
@@ -21,12 +22,13 @@ use utils::to_hex_i32;
 use utils::to_int;
 use web3;
 use web3::types::Bytes;
+use web3::types::CallRequest as CallRequestOriginal;
 use web3::types::Transaction as TransactionOriginal;
 use web3::types::BlockHeader as BlockHeaderOriginal;
 use serde::{Deserialize, Serialize};
 pub mod exceptions;
 pub mod types;
-use types::{HexStr, Primitives};
+use types::{HexStr, Primitives, CallRequest};
 use ruint::aliases::U256;
 
 #[pyclass(module = "web3_rush", subclass)]
@@ -148,9 +150,24 @@ impl EthHttp {
     }
 
     pub fn fee_history(&self, block_count: U256, newest_block: BlockNumberParser, reward_percentiles: Option<Vec<f64>>) -> PyResult<FeeHistory> {
-        match block_on(self.0.fee_history(block_count.into(), newest_block.into_org()?, reward_percentiles)){
+        match block_on(self.0.fee_history(block_count.into(), newest_block.into(), reward_percentiles)){
             Ok(result) => {
                 Ok(result.into())
+            },
+            Err(err) => {
+                Err(wrap_web3_error(err))
+            },
+        }
+    }
+    
+    pub fn call(&self, req: CallRequest, block: Option<BlockId>) -> PyResult<Vec<u8>> {
+        let block = match block {
+            Some(b) => Some(b.into()),
+            None => None,
+        };
+        match block_on(self.0.call(req.into(), block)){
+            Ok(result) => {
+                Ok(result.0)
             },
             Err(err) => {
                 Err(wrap_web3_error(err))
@@ -193,11 +210,11 @@ impl Web3ApiHttp {
     #[staticmethod]
     pub fn to_hex(primitive: Option<Primitives>, hexstr: Option<HexStr>, text: Option<String>) -> PyResult<String> {
         if let Some(hexstr) = hexstr {
-            Ok(add_0x_prefix(hexstr).value())
+            Ok(add_0x_prefix(hexstr).into())
         } else if let Some(text) = text {
             match encode_hex(AnyStr::Str(text)) {
                 Ok(text) => {
-                    Ok(text.value())
+                    Ok(text.into())
                 },
                 Err(err) => {
                     Err(PyTypeError::new_err(err))
@@ -216,7 +233,7 @@ impl Web3ApiHttp {
                         Primitives::String(str) => {
                             match encode_hex(AnyStr::Str(str)) {
                                 Ok(text) => {
-                                    Ok(text.to_string())
+                                    Ok(text.into())
                                 },
                                 Err(err) => {
                                     Err(PyTypeError::new_err(err))
@@ -226,7 +243,7 @@ impl Web3ApiHttp {
                         Primitives::Bytes(bytes) => {
                             match encode_hex(AnyStr::Bytes(bytes)) {
                                 Ok(text) => {
-                                    Ok(text.to_string())
+                                    Ok(text.into())
                                 },
                                 Err(err) => {
                                     Err(PyTypeError::new_err(err))
