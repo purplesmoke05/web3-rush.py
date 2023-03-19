@@ -12,7 +12,6 @@ build-prod:
 	poetry run maturin develop --release
 
 test: build
-	docker-compose up -d
 	poetry run pytest --benchmark-skip -s tests/*
 
 b: build

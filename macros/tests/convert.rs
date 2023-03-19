@@ -8,14 +8,14 @@ pub struct Fuga {
 
 #[derive(Debug)]
 pub struct FugaChild {
-    c: String,
+    c: Option<String>,
     d: u64
 }
 
 #[struct_original_mapping(FugaChild)]
 #[derive(Debug)]
 pub struct HogeChild {
-    c: String,
+    c: Option<String>,
     d: u64
 }
 
@@ -39,10 +39,10 @@ pub struct Hage(pub Fugo);
 
 
 fn main(){
-    let f = Fuga{ a: "test".to_owned(), b: FugaChild { c: "test".to_owned(), d: 0 } };
+    let f = Fuga{ a: "test".to_owned(), b: FugaChild { c: Some("test".to_owned()), d: 0 } };
     let h: Hoge = f.into();
     let f2: Fuga = h.into();
-    println!("{}", f2.b.c);
+    println!("{}", f2.b.d);
 
 
     // let fugo: Fugo2 = Fugo2{a: "fugo".to_owned(), b: 0};

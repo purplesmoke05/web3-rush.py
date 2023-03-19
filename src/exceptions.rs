@@ -1,3 +1,6 @@
+use std::io::Error;
+
+use ethers::{providers::ProviderError};
 use pyo3::{
     create_exception,
     exceptions::{PyException},
@@ -6,7 +9,15 @@ use pyo3::{
 
 create_exception!(exceptions, BaseWeb3RushError, PyException);
 
-pub fn wrap_web3_error(error: web3::Error) -> pyo3::PyErr {
+pub fn wrap_parse_error(error: url::ParseError) -> pyo3::PyErr {
+    return BaseWeb3RushError::new_err(format!("Parse error: {:?}", error));
+}
+
+pub fn wrap_provider_error(error: ProviderError) -> pyo3::PyErr {
+    return BaseWeb3RushError::new_err(format!("Provider error: {:?}", error));
+}
+
+pub fn wrap_web3_error(error: Error) -> pyo3::PyErr {
     return BaseWeb3RushError::new_err(format!("Web3 error: {:?}", error));
 }
 
