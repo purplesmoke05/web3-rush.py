@@ -8,7 +8,13 @@ class TestEthModule:
         print(web3.eth.accounts[0])
         assert web3.eth.chain_id == 31337
         assert web3.eth.gas_price == 2000000000
-        # assert web3.eth.fee_history(0, 0) == None
+        fee_history = web3.eth.fee_history(0, 0, [])
+        print(fee_history.base_fee_per_gas)
+        print(fee_history.gas_used_ratio)
+        print(fee_history.oldest_block)
+        print(fee_history.reward)
+        print(dir(fee_history))
+        assert fee_history == None
         # assert web3.eth.block_number == "0.1.0"
 
         web3.eth.send_transaction(

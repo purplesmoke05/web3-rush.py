@@ -1,11 +1,15 @@
 use derive_more::{Display, From, Into};
 
 use ethers::types::Bloom as BloomOriginal;
+use pyo3::exceptions::PyOverflowError;
+use pyo3::{ToPyObject, PyObject, Python, ffi, IntoPy, PyAny, PyResult, PyErr, AsPyPointer};
 use pyo3::{FromPyObject, pyclass};
 use serde::{Serialize, Deserialize};
 use solders_macros::{EnumIntoPy, enum_original_mapping};
 use core::ops::{Deref, DerefMut};
 use std::collections::BTreeMap;
+use std::ffi::c_uchar;
+use std::str::FromStr;
 use ethers::types::Address as AddressOriginal;
 use ethers::types::U64 as U64Original;
 use ethers::types::{U256 as U256Original, Bytes as BytesOriginal, H256 as H256Original, TxHash as TxHashOriginal, H160 as H160Original, H64 as H64Original};
@@ -73,10 +77,43 @@ impl Into<BlockNumberOriginal> for BlockNumberParser {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[tuple_struct_original_mapping(FeeHistoryOriginal)]
-#[pyclass(module = "web3_rush")]
-pub struct FeeHistory(pub FeeHistoryOriginal);
+#[derive(Clone)]
+#[pyclass(module = "web3_rush", get_all)]
+pub struct FeeHistory {
+    pub base_fee_per_gas: Vec<U256>,
+    pub gas_used_ratio: Vec<f64>,
+    /// oldestBlock is returned as an unsigned integer up to geth v1.10.6. From
+    /// geth v1.10.7, this has been updated to return in the hex encoded form.
+    /// The custom deserializer allows backward compatibility for those clients
+    /// not running v1.10.7 yet.
+    pub oldest_block: U256,
+    /// An (optional) array of effective priority fee per gas data points from a single block. All
+    /// zeroes are returned if the block is empty.
+    pub reward: Vec<Vec<U256>>,
+}
+
+impl From<FeeHistoryOriginal> for FeeHistory {
+    fn from(value: FeeHistoryOriginal) -> Self {
+        FeeHistory { 
+            base_fee_per_gas: value.base_fee_per_gas.into_iter().map(|v|{U256(v)}).collect(), 
+            gas_used_ratio: value.gas_used_ratio, 
+            oldest_block: U256(U256Original::from_str(&value.oldest_block.to_string()).unwrap()), 
+            reward: value.reward.into_iter().map(|v|{v.into_iter().map(|v|{U256(v)}).collect()}).collect()
+        }
+    }
+}
+
+impl Into<FeeHistoryOriginal> for FeeHistory {
+    fn into(self) -> FeeHistoryOriginal {
+        FeeHistoryOriginal{ 
+            base_fee_per_gas: self.base_fee_per_gas.into_iter().map(|v|{U256Original::from_str(&v.0.to_string()).unwrap()}).collect(), 
+            gas_used_ratio: self.gas_used_ratio, 
+            oldest_block: U256Original::from_str(&self.oldest_block.0.to_string()).unwrap(), 
+            reward: self.reward.into_iter().map(|v|{v.into_iter().map(|v|{U256Original::from_str(&v.0.to_string()).unwrap()}).collect()}).collect()
+        }
+    }
+}
+
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[tuple_struct_original_mapping(OtherFieldsOriginal)]
@@ -113,16 +150,109 @@ pub struct H160(pub H160Original);
 #[pyclass(module = "web3_rush")]
 pub struct U64(pub U64Original);
 
-impl From<i32> for U64 {
-    fn from(value: i32) -> U64 {
-        U64(U64Original::from(value as u64))
-    }
-}
 
 #[derive(Clone)]
 #[tuple_struct_original_mapping(U256Original)]
-#[pyclass(module = "web3_rush")]
-pub struct U256(pub U256Original);
+#[repr(transparent)]
+pub struct U256(
+    pub U256Original
+);
+
+impl From<ruint::aliases::U256> for U256 {
+    fn from(value: ruint::aliases::U256) -> U256 {
+        U256(U256Original::from_big_endian(&value.to_be_bytes_vec()))
+    }
+}
+
+impl Into<ruint::aliases::U256> for U256 {
+    fn into(self) -> ruint::aliases::U256 {
+        ruint::aliases::U256::from_str(&self.0.to_string()).unwrap()
+    }
+}
+
+impl ToPyObject for U256 {
+    fn to_object(&self, py: Python<'_>) -> PyObject {
+        let binding = Into::<ruint::aliases::U256>::into(self.clone());
+        let bytes = binding.as_le_bytes();
+        unsafe {
+            let obj =
+                ffi::_PyLong_FromByteArray(bytes.as_ptr().cast::<c_uchar>(), bytes.len(), 1, 0);
+            PyObject::from_owned_ptr(py, obj)
+        }
+    }
+}
+
+impl IntoPy<PyObject> for U256 {
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        self.to_object(py)
+    }
+}
+
+impl<'source> FromPyObject<'source> for U256 {
+    fn extract(ob: &'source PyAny) -> PyResult<Self> {
+        let mut result = ruint::aliases::U256::from(0);
+
+        #[cfg(target_endian = "little")]
+        let py_result = unsafe {
+            let raw = result.as_le_slice_mut();
+            ffi::_PyLong_AsByteArray(
+                ob.as_ptr().cast::<ffi::PyLongObject>(),
+                raw.as_mut_ptr(),
+                raw.len(),
+                1,
+                0,
+            )
+        };
+
+        #[cfg(not(target_endian = "little"))]
+        let py_result = {
+            let mut raw = vec![0_u8; Self::LIMBS * 8];
+            let py_result = unsafe {
+                ffi::_PyLong_AsByteArray(
+                    ob.as_ptr().cast::<ffi::PyLongObject>(),
+                    raw.as_mut_ptr(),
+                    raw.len(),
+                    1,
+                    0,
+                )
+            };
+            result = Self::try_from_le_slice(raw.as_slice()).ok_or_else(|| {
+                PyOverflowError::new_err(format!("Number to large to fit Uint<{}>", Self::BITS))
+            })?;
+            py_result
+        };
+
+        if py_result != 0 {
+            return Err(PyErr::fetch(ob.py()));
+        }
+
+        #[cfg(target_endian = "little")]
+        if let Some(last) = Into::<ruint::aliases::U256>::into(result).as_limbs().last() {
+            if *last > mask(ruint::aliases::U256::BITS) {
+                return Err(PyOverflowError::new_err(format!(
+                    "Number to large to fit Uint<{}>",
+                    ruint::aliases::U256::BITS
+                )));
+            }
+        }
+
+        Ok(result.into())
+    }
+}
+
+
+const fn mask(bits: usize) -> u64 {
+    if bits == 0 {
+        return 0;
+    }
+    let bits = bits % 64;
+    if bits == 0 {
+        u64::MAX
+    } else {
+        (1 << bits) - 1
+    }
+}
+
 
 #[derive(Clone)]
 #[tuple_struct_original_mapping(BytesOriginal)]
