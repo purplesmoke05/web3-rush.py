@@ -1,6 +1,7 @@
 use std::io::Error;
 
 use ethers::{providers::ProviderError};
+use hex::FromHexError;
 use pyo3::{
     create_exception,
     exceptions::{PyException},
@@ -8,6 +9,10 @@ use pyo3::{
 };
 
 create_exception!(exceptions, BaseWeb3RushError, PyException);
+
+pub fn wrap_from_hex_error(error: rustc_hex::FromHexError) -> pyo3::PyErr {
+    return BaseWeb3RushError::new_err(format!("From hex error: {:?}", error));
+}
 
 pub fn wrap_parse_error(error: url::ParseError) -> pyo3::PyErr {
     return BaseWeb3RushError::new_err(format!("Parse error: {:?}", error));

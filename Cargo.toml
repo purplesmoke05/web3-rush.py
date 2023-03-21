@@ -41,6 +41,7 @@ inter-struct = "0.2.0"
 thinwrap = "1.0.0"
 pyo3-built = "0.4"
 url = "2.3.1"
+rustc-hex = "2.1.0"
 
 [build-dependencies]
 built = { version = "0.6", features = ["chrono"] }

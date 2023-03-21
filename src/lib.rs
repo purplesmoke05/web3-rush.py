@@ -62,10 +62,10 @@ use web3_rush_macros::tuple_struct_original_mapping;
 #[pymethods]
 impl EthHttp {
     #[getter]
-    pub fn accounts(&self) -> PyResult<Vec<String>> {
+    pub fn accounts(&self) -> PyResult<Vec<Address>> {
         match block_on(self.0.get_accounts()){
             Ok(result) => {
-                Ok(result.into_iter().map(|r| {r.to_string() }).collect())
+                Ok(result.into_iter().map(|r| {Address(r) }).collect())
             },
             Err(err) => {
                 Err(wrap_provider_error(err))

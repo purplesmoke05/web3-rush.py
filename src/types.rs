@@ -1,6 +1,7 @@
 use derive_more::{Display, From, Into};
 
 use ethers::types::Bloom as BloomOriginal;
+use ethers::utils::to_checksum;
 use pyo3::exceptions::PyOverflowError;
 use pyo3::{ToPyObject, PyObject, Python, ffi, IntoPy, PyAny, PyResult, PyErr, AsPyPointer};
 use pyo3::{FromPyObject, pyclass};
@@ -35,10 +36,34 @@ pub enum Primitives {
     Bool(bool),
 }
 
-#[pyclass(module = "web3_rush")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[tuple_struct_original_mapping(AddressOriginal)]
 pub struct Address(pub AddressOriginal);
+
+impl ToPyObject for Address {
+    #[inline]
+    fn to_object(&self, py: Python<'_>) -> PyObject {
+        PyString::new(py, &to_checksum(&self.0, None)).into()
+    }
+}
+
+impl IntoPy<PyObject> for Address {
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        self.to_object(py)
+    }
+}
+
+impl FromPyObject<'_> for Address {
+    fn extract(obj: &PyAny) -> PyResult<Self> {
+        match AddressOriginal::from_str(obj.downcast::<PyString>()?.to_str()?) {
+            Ok(v) => Ok(Address(v)),
+            Err(err) => {
+                
+                Err(wrap_from_hex_error(err))
+            },
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 #[tuple_enum_original_mapping(NameOrAddressOriginal)]
@@ -153,10 +178,7 @@ pub struct U64(pub U64Original);
 
 #[derive(Clone)]
 #[tuple_struct_original_mapping(U256Original)]
-#[repr(transparent)]
-pub struct U256(
-    pub U256Original
-);
+pub struct U256(pub U256Original);
 
 impl From<ruint::aliases::U256> for U256 {
     fn from(value: ruint::aliases::U256) -> U256 {
@@ -280,7 +302,7 @@ impl Into<BlockIdOriginal> for BlockId {
     }
 }
 
-use pyo3::types::PyDict;
+use pyo3::types::{PyDict, PyString};
 
 #[pyclass(module = "web3_rush")]
 #[derive(Clone)]
@@ -412,6 +434,8 @@ pub struct Log {
 
 
 use ethers::types::TransactionReceipt as TransactionReceiptOriginal;
+
+use crate::exceptions::wrap_from_hex_error;
 
 #[derive(Clone)]
 #[tuple_struct_original_mapping(BloomOriginal)]
