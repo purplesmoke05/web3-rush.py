@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from web3_rush import Web3
+from web3_rush.web3_rush import Web3
 import pytest
 
 

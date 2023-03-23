@@ -12,8 +12,7 @@ build-prod:
 	poetry run maturin develop --release
 
 test: build
-	docker-compose up -d
 	poetry run pytest --benchmark-skip -s tests/*
 
 b: build
-	poetry run pytest -v --benchmark-only
+	poetry run pytest -v --benchmark-only --benchmark-json output.json --benchmark-verbose --benchmark-group-by=func --benchmark-sort=fullname

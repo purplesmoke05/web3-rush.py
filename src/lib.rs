@@ -1,136 +1,125 @@
-
 pub mod utils;
 
 use std::ops::Add;
 use std::str::FromStr;
+use std::sync::Arc;
+use std::thread;
+use std::time;
 
 use async_std::task::block_on;
 use derive_more::From;
 use derive_more::Into;
+use ethers::providers::Middleware;
+use exceptions::wrap_parse_error;
+use exceptions::wrap_provider_error;
 use exceptions::wrap_web3_error;
 use pyo3::exceptions::PyTypeError;
 use pyo3::{prelude::*};
+use pythonize::depythonize;
 use tokio::runtime::Runtime;
 use types::Address;
 use types::AnyStr;
+use types::BlockId;
 use types::BlockNumberParser;
+use types::Bytes;
+use types::Eip1559TransactionRequest;
+use types::Eip2930TransactionRequest;
 use types::FeeHistory;
+use types::H256;
+use types::NameOrAddress;
+use types::TransactionReceipt;
 use utils::add_0x_prefix;
 use utils::encode_hex;
 use utils::to_hex_i32;
 use utils::to_int;
-use web3;
-use web3::types::Bytes;
-use web3::types::Transaction as TransactionOriginal;
-use web3::types::BlockHeader as BlockHeaderOriginal;
+use ethers::types::Address as AddressOriginal;
+use ethers::types::Transaction as TransactionOriginal;
+use ethers::types::H256 as H256Original;
+use ethers::types::U256 as U256Original;
 use serde::{Deserialize, Serialize};
 pub mod exceptions;
 pub mod types;
-use types::{HexStr, Primitives};
+use types::{HexStr, Primitives, TransactionRequest, TypedTransaction};
 use ruint::aliases::U256;
 
-#[pyclass(module = "web3_rush", subclass)]
 #[derive(
     Serialize,
     Deserialize,
     PartialEq,
     Debug,
     Clone,
-    From,
-    Into,
 )]
+#[tuple_struct_original_mapping(TransactionOriginal)]
+#[pyclass(module = "web3_rush")]
 pub struct Transaction(pub TransactionOriginal);
 
-#[pyclass(module = "web3_rush", subclass)]
-#[derive(
-    Serialize,
-    Deserialize,
-    PartialEq,
-    Debug,
-    Clone,
-    From,
-    Into,
-)]
-pub struct BlockData(pub BlockHeaderOriginal);
-
-#[pyclass(module = "web3_rush", subclass)]
 #[derive(
     From,
     Into,
 )]
-pub struct EthHttp(web3::api::Eth<web3::transports::Http>);
+#[pyclass(module = "web3_rush")]
+pub struct EthHttp(Arc<ethers::providers::Provider<ethers::providers::Http>>);
 use num_bigint::{BigInt, BigUint};
+use web3_rush_macros::tuple_struct_original_mapping;
 
 #[pymethods]
 impl EthHttp {
     #[getter]
-    pub fn accounts(&self) -> PyResult<Vec<String>> {
-        match block_on(self.0.accounts()){
+    pub fn accounts(&self) -> PyResult<Vec<Address>> {
+        match block_on(self.0.get_accounts()){
             Ok(result) => {
-                Ok(result.into_iter().map(|r| {r.to_string() }).collect())
+                Ok(result.into_iter().map(|r| {Address(r) }).collect())
             },
             Err(err) => {
-                Err(wrap_web3_error(err))
-            },
-        }
-    }
-
-    #[getter]
-    pub fn hashrate(&self) -> PyResult<BigUint> {
-        match block_on(self.0.hashrate()){
-            Ok(result) => {
-                Ok(BigUint::from_str(&result.to_string()).unwrap())
-            },
-            Err(err) => {
-                Err(wrap_web3_error(err))
+                Err(wrap_provider_error(err))
             },
         }
     }
 
     #[getter]
     pub fn block_number(&self) -> PyResult<u64> {
-        match block_on(self.0.block_number()){
+        match block_on(self.0.get_block_number()){
             Ok(result) => {
                 Ok(result.as_u64())
             },
             Err(err) => {
-                Err(wrap_web3_error(err))
+                Err(wrap_provider_error(err))
             },
         }
     }
 
     #[getter]
     pub fn chain_id(&self) -> PyResult<BigUint> {
-        match block_on(self.0.chain_id()){
+        match block_on(self.0.get_chainid()){
             Ok(result) => {
                 Ok(BigUint::from_str(&result.to_string()).unwrap())
             },
             Err(err) => {
-                Err(wrap_web3_error(err))
+                Err(wrap_provider_error(err))
             },
         }
     }
 
     #[getter]
-    pub fn coinbase(&self) -> PyResult<String> {
-        match block_on(self.0.coinbase()){
+    pub fn coinbase(&self) -> PyResult<Address> {
+        match block_on(self.0.request("eth_coinbase", ())){
             Ok(result) => {
-                Ok(result.to_string())
+                Ok(result)
             },
             Err(err) => {
-                Err(wrap_web3_error(err))
+                Err(wrap_provider_error(err))
             },
         }
     }
 
     #[getter]
     pub fn gas_price(&self) -> PyResult<BigUint> {
-        match block_on(self.0.gas_price()){
+        match block_on(self.0.get_gas_price()){
             Ok(result) => {
                 Ok(BigUint::from_str(&result.to_string()).unwrap())
             },
             Err(err) => {
-                Err(wrap_web3_error(err))
+                Err(wrap_provider_error(err))
             },
         }
     }
@@ -142,29 +131,151 @@ impl EthHttp {
                 Ok(result)
             },
             Err(err) => {
-                Err(wrap_web3_error(err))
+                Err(wrap_provider_error(err))
             },
         }
     }
 
-    pub fn fee_history(&self, block_count: U256, newest_block: BlockNumberParser, reward_percentiles: Option<Vec<f64>>) -> PyResult<FeeHistory> {
-        match block_on(self.0.fee_history(block_count.into(), newest_block.into_org()?, reward_percentiles)){
+    pub fn fee_history(&self, block_count: U256, newest_block: BlockNumberParser, reward_percentiles: Vec<f64>) -> PyResult<FeeHistory> {
+        match block_on(self.0.fee_history::<U256Original>(block_count.into(), newest_block.into(), &reward_percentiles)){
             Ok(result) => {
                 Ok(result.into())
             },
             Err(err) => {
-                Err(wrap_web3_error(err))
+                Err(wrap_provider_error(err))
             },
         }
     }
+    
+    pub fn call(&self, req: TypedTransaction, block: Option<BlockId>) -> PyResult<Bytes> {
+        let block = match block {
+            Some(b) => Some(b.into()),
+            None => None,
+        };
+        match block_on(self.0.call(&req.into(), block)){
+            Ok(result) => {
+                Ok(result.into())
+            },
+            Err(err) => {
+                Err(wrap_provider_error(err))
+            },
+        }
+    }
+
+    pub fn estimate_gas(&self, req: TypedTransaction, block: Option<BlockId>) -> PyResult<U256> {
+        let block = match block {
+            Some(b) => Some(b.into()),
+            None => None,
+        };
+        match block_on(self.0.estimate_gas(&req.into(), block)){
+            Ok(result) => {
+                Ok(result.into())
+            },
+            Err(err) => {
+                Err(wrap_provider_error(err))
+            },
+        }
+    }
+
+    pub fn get_transaction(&self, tx_hash: H256) -> PyResult<Option<Transaction>> {
+        match block_on(self.0.get_transaction::<H256>(tx_hash.into())) {
+            Ok(result) => {
+                match result {
+                    Some(result) => {Ok(Some(result.into()))},
+                    None => {Ok(None)}
+                }
+            },
+            Err(err) => {
+                Err(wrap_provider_error(err))
+            },
+        }
+    }
+
+    pub fn send_transaction(&self, tx: PyObject) -> PyResult<H256> {
+        let tx = Python::with_gil(|py| {
+            match depythonize::<TransactionRequest>(tx.as_ref(py)) {
+                Ok(res) => Ok(TypedTransaction::Legacy(res)),
+                Err(err) => match depythonize::<Eip1559TransactionRequest>(tx.as_ref(py)) {
+                    Ok(res) => Ok(TypedTransaction::Eip1559(res)),
+                    Err(err) => match depythonize::<Eip2930TransactionRequest>(tx.as_ref(py)) {
+                        Ok(res) => Ok(TypedTransaction::Eip2930(res)),
+                        Err(err) => {
+                            return Err(err);
+                        }
+                    }
+                },
+            }
+        })?;
+        match block_on(self.0.send_transaction::<TypedTransaction>(tx, None)) {
+            Ok(result) => {
+                Ok(types::H256(H256Original::from_slice(result.as_ref())))
+            },
+            Err(err) => {
+                Err(wrap_provider_error(err))
+            },
+        }
+    }
+
+    pub fn get_transaction_receipt(&self, tx_hash: H256) -> PyResult<Option<TransactionReceipt>> {
+        match block_on(self.0.get_transaction_receipt::<H256>(tx_hash.into())) {
+            Ok(result) => {
+                match result {
+                    Some(result) => Ok(Some(result.into())),
+                    None => Ok(None)
+                }
+            },
+            Err(err) => {
+                Err(wrap_provider_error(err))
+            },
+        }
+    }
+
+    pub fn get_transaction_count(&self, address: Address, block: Option<BlockId>) -> PyResult<U256> {
+        let block = match block {
+            Some(b) => Some(b.into()),
+            None => None,
+        };
+        match block_on(self.0.get_transaction_count::<AddressOriginal>(address.into(), block.into())) {
+            Ok(result) => {
+                Ok(result.into())
+            },
+            Err(err) => {
+                Err(wrap_provider_error(err))
+            },
+        }
+    }
+
+    pub fn wait_for_transaction_receipt(&self, tx_hash: H256, timeout: f64, poll_latency: f64) -> PyResult<TransactionReceipt> {
+        let wait_start = time::Instant::now();
+
+        while wait_start.elapsed() <= time::Duration::from_secs_f64(timeout) {
+            match block_on(self.0.get_transaction_receipt::<H256>(tx_hash.clone().into())) {
+                Ok(result) => {
+                    match result {
+                        Some(result) => {
+                            return Ok(result.into());
+                        },
+                        None =>{
+                            thread::sleep(time::Duration::from_secs_f64(poll_latency));
+                        }
+                    }
+                }
+                Err(err) => {
+                    return Err(wrap_provider_error(err));
+                }
+            };
+        }
+        Err(PyTypeError::new_err(format!("Transaction {} is not in the chain after {} seconds", tx_hash.0.to_string(), timeout)))
+    }
 }
 
-#[pyclass(module = "web3_rush", subclass)]
 #[derive(
     From,
     Into,
+    Clone
 )]
-pub struct Web3ApiHttp(web3::api::Web3Api<web3::transports::Http>);
+#[pyclass(module = "web3_rush")]
+pub struct Web3ApiHttp(Arc<ethers::providers::Provider<ethers::providers::Http>>);
 
 #[pymethods]
 impl Web3ApiHttp {
@@ -175,7 +286,7 @@ impl Web3ApiHttp {
                 Ok(result)
             },
             Err(err) => {
-                Err(wrap_web3_error(err))
+                Err(wrap_provider_error(err))
             },
         }
     }
@@ -193,11 +304,11 @@ impl Web3ApiHttp {
     #[staticmethod]
     pub fn to_hex(primitive: Option<Primitives>, hexstr: Option<HexStr>, text: Option<String>) -> PyResult<String> {
         if let Some(hexstr) = hexstr {
-            Ok(add_0x_prefix(hexstr).value())
+            Ok(add_0x_prefix(hexstr).into())
         } else if let Some(text) = text {
             match encode_hex(AnyStr::Str(text)) {
                 Ok(text) => {
-                    Ok(text.value())
+                    Ok(text.into())
                 },
                 Err(err) => {
                     Err(PyTypeError::new_err(err))
@@ -216,7 +327,7 @@ impl Web3ApiHttp {
                         Primitives::String(str) => {
                             match encode_hex(AnyStr::Str(str)) {
                                 Ok(text) => {
-                                    Ok(text.to_string())
+                                    Ok(text.into())
                                 },
                                 Err(err) => {
                                     Err(PyTypeError::new_err(err))
@@ -226,7 +337,7 @@ impl Web3ApiHttp {
                         Primitives::Bytes(bytes) => {
                             match encode_hex(AnyStr::Bytes(bytes)) {
                                 Ok(text) => {
-                                    Ok(text.to_string())
+                                    Ok(text.into())
                                 },
                                 Err(err) => {
                                     Err(PyTypeError::new_err(err))
@@ -256,32 +367,31 @@ impl Web3ApiHttp {
 
 #[pyclass(module = "web3_rush")]
 pub struct Web3 {
-    client: web3::Web3<web3::transports::Http>
+    client: Arc<ethers::providers::Provider<ethers::providers::Http>>
 }
 
 #[pymethods]
 impl Web3 {
     #[new]
     pub fn new(url: String) -> PyResult<Self> {
-        let transport = web3::transports::Http::new(&url);
-        match transport {
-            Ok(transport) => {
-                let client = web3::Web3::new(transport);
-                Ok(Web3 { client })
+        let client = ethers::providers::Provider::<ethers::providers::Http>::try_from(url);
+        match client {
+            Ok(client) => {
+                Ok(Web3 { client:Arc::new(client) })
             },
             Err(err) => {
-                Err(wrap_web3_error(err))
+                Err(wrap_parse_error(err))
             },
         }
     }
 
     #[getter]
     pub fn web3(&self) -> PyResult<Web3ApiHttp> {
-        Ok(Web3ApiHttp(self.client.web3()))
+        Ok(Web3ApiHttp(self.client.clone()))
     }
     #[getter]
     pub fn eth(&self) -> PyResult<EthHttp> {
-        Ok(EthHttp(self.client.eth()))
+        Ok(EthHttp(self.client.clone()))
     }
 }
 

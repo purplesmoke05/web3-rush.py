@@ -1,14 +1,12 @@
-use std::{string::FromUtf8Error, io::Cursor, str::Bytes};
+use std::{string::FromUtf8Error};
 
-use byteorder::{ReadBytesExt, BigEndian};
 use hex::ToHex;
 use pyo3::{PyErr, exceptions::PyTypeError};
-use tokio::io::AsyncReadExt;
 
 use crate::{types::{HexStr, AnyStr, Primitives}, exceptions::BaseWeb3RushError};
 
 pub fn add_0x_prefix(value: HexStr) -> HexStr{
-    return HexStr::new(format!("0x{}", value))
+    return HexStr::from(format!("0x{}", value))
 }
 
 pub fn encode_hex(value: AnyStr) -> Result<HexStr, FromUtf8Error> {
@@ -21,7 +19,7 @@ pub fn encode_hex(value: AnyStr) -> Result<HexStr, FromUtf8Error> {
         },
     };
 
-    Ok(add_0x_prefix(HexStr::new(ascii_bytes.as_bytes().encode_hex())))
+    Ok(add_0x_prefix(HexStr::from(ascii_bytes.as_bytes().encode_hex::<String>())))
 }
 
 pub fn decode_hex(value: String) -> Result<Vec<u8>, PyErr> {
@@ -49,7 +47,7 @@ pub fn to_bytes(primitive: Option<Primitives>, hexstr: Option<HexStr>, text: Opt
             Primitives::Int(i) => Ok(i.to_be_bytes().to_vec()),
         }
     } else if let Some(hexstr) = hexstr {
-        let v = hexstr.value();
+        let v: String = hexstr.into();
         if v.len() % 2 > 0 {
             return Ok(decode_hex("0x0".to_owned()+&v.replace("0x", ""))?)
         };
@@ -63,7 +61,7 @@ pub fn to_bytes(primitive: Option<Primitives>, hexstr: Option<HexStr>, text: Opt
 
 pub fn to_int(primitive: Option<Primitives>, hexstr: Option<HexStr>, text: Option<String>) -> Result<isize, PyErr> {
     if let Some(hexstr) = hexstr {
-        Ok(isize::from_str_radix(&hexstr.value().replace("0x", ""), 16)?)
+        Ok(isize::from_str_radix(&hexstr.to_string().replace("0x", ""), 16)?)
     } else if let Some(text) = text {
         Ok(text.parse().unwrap_or(0))
     } else if let Some(primitive) = primitive {
