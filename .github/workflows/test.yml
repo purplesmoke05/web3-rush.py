@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
-        poetry-version: ["1.3", "1.4"]
+        poetry-version: ["1.4"]
     name: "Unit test"
     runs-on: ubuntu-22.04
     steps:
@@ -29,8 +29,7 @@ jobs:
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
-          profile: minimal
+          toolchain: nightly
       - name: Run anvil
         run: docker-compose up -d
       - name: Run pytest
