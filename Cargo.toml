@@ -17,8 +17,9 @@ name = "web3_rush"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.18.1", features = ["macros", "extension-module", "num-bigint"] }
+pyo3 = { version = "0.18.1", features = ["macros", "extension-module", "num-bigint", "serde"] }
 pyo3-asyncio = { version = "0.18.0", features = ["attributes", "async-std-runtime"] }
+pythonize = "0.18.0"
 ethers = "2.0.0"
 serde = "^1.0.153"
 serde_json = "^1.0.94"
@@ -29,9 +30,9 @@ async-std = { version = "1", features = ["attributes", "tokio1"] }
 tokio = "1.26.0"
 byteorder = "1.4.3"
 accessors = "0.0.3"
-num-bigint = "0.4.3"
+num-bigint = { version="0.4.3", features = ["serde"]}
 solders-macros = "0.14.4"
-ruint = { version = "1.7.0", features = ["primitive-types", "pyo3"], git= "https://github.com/purplesmoke05/uint"}
+ruint = { version = "1.7.0", features = ["primitive-types", "pyo3", "serde"], git= "https://github.com/purplesmoke05/uint"}
 dict_derive = "0.4.0"
 struct-convert = "1.2.7"
 derivative = "2.2.0"

@@ -1,5 +1,5 @@
 use derive_more::{Display, From, Into};
-
+use pyo3::types::{PyString, PyInt};
 use ethers::types::Bloom as BloomOriginal;
 use ethers::utils::to_checksum;
 use pyo3::exceptions::PyOverflowError;
@@ -48,12 +48,14 @@ impl ToPyObject for Address {
 }
 
 impl IntoPy<PyObject> for Address {
+    #[inline]
     fn into_py(self, py: Python<'_>) -> PyObject {
         self.to_object(py)
     }
 }
 
 impl FromPyObject<'_> for Address {
+    #[inline]
     fn extract(obj: &PyAny) -> PyResult<Self> {
         match AddressOriginal::from_str(obj.downcast::<PyString>()?.to_str()?) {
             Ok(v) => Ok(Address(v)),
@@ -65,7 +67,7 @@ impl FromPyObject<'_> for Address {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Serialize, Deserialize)]
 #[tuple_enum_original_mapping(NameOrAddressOriginal)]
 pub enum NameOrAddress {
     /// An ENS Name (format does not get checked)
@@ -73,6 +75,36 @@ pub enum NameOrAddress {
     /// An Ethereum Address
     Address(Address),
 }
+
+impl ToPyObject for NameOrAddress {
+    #[inline]
+    fn to_object(&self, py: Python<'_>) -> PyObject {
+        match self {
+            NameOrAddress::Name(name) => PyString::new(py, name).into(),
+            NameOrAddress::Address(addr) => PyString::new(py, &to_checksum(&addr.0, None)).into(),
+        }
+    }
+}
+
+impl IntoPy<PyObject> for NameOrAddress {
+    #[inline]
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        self.to_object(py)
+    }
+}
+
+impl FromPyObject<'_> for NameOrAddress {
+    #[inline]
+    fn extract(obj: &PyAny) -> PyResult<Self> {
+        match AddressOriginal::from_str(obj.downcast::<PyString>()?.to_str()?) {
+            Ok(v) => Ok(NameOrAddress::Address(Address(v))),
+            Err(_) => {
+                Ok(NameOrAddress::Name(obj.downcast::<PyString>()?.to_str()?.to_owned()))
+            },
+        }
+    }
+}
+
 
 #[derive(FromPyObject, Clone)]
 pub enum BlockNumberParser {
@@ -120,10 +152,10 @@ pub struct FeeHistory {
 impl From<FeeHistoryOriginal> for FeeHistory {
     fn from(value: FeeHistoryOriginal) -> Self {
         FeeHistory { 
-            base_fee_per_gas: value.base_fee_per_gas.into_iter().map(|v|{U256(v)}).collect(), 
+            base_fee_per_gas: value.base_fee_per_gas.into_iter().map(|v|{v.into()}).collect(), 
             gas_used_ratio: value.gas_used_ratio, 
             oldest_block: U256(U256Original::from_str(&value.oldest_block.to_string()).unwrap()), 
-            reward: value.reward.into_iter().map(|v|{v.into_iter().map(|v|{U256(v)}).collect()}).collect()
+            reward: value.reward.into_iter().map(|v|{v.into_iter().map(|v|{v.into()}).collect()}).collect()
         }
     }
 }
@@ -160,24 +192,44 @@ pub enum AnyStr {
 #[pyclass(module = "web3_rush")]
 pub struct H64(pub H64Original);
 
-#[pyclass(module = "web3_rush")]
 #[derive(Clone)]
 #[tuple_struct_original_mapping(H256Original)]
 pub struct H256(pub H256Original);
+
+impl ToPyObject for H256 {
+    #[inline]
+    fn to_object(&self, py: Python<'_>) -> PyObject {
+        PyString::new(py, &self.0.to_string()).into()
+    }
+}
+
+impl IntoPy<PyObject> for H256 {
+    #[inline]
+    fn into_py(self, py: Python<'_>) -> PyObject {
+        self.to_object(py)
+    }
+}
+
+impl FromPyObject<'_> for H256 {
+    #[inline]
+    fn extract(obj: &PyAny) -> PyResult<Self> {
+        Ok(H256(H256Original::from_str(&obj.downcast::<PyString>()?.to_string()).unwrap()))
+    }
+}
+
 
 #[derive(Clone)]
 #[tuple_struct_original_mapping(H160Original)]
 #[pyclass(module = "web3_rush")]
 pub struct H160(pub H160Original);
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 #[tuple_struct_original_mapping(U64Original)]
 #[pyclass(module = "web3_rush")]
 pub struct U64(pub U64Original);
 
 
-#[derive(Clone)]
-#[tuple_struct_original_mapping(U256Original)]
+#[derive(Clone, Deserialize)]
 pub struct U256(pub U256Original);
 
 impl From<ruint::aliases::U256> for U256 {
@@ -189,6 +241,30 @@ impl From<ruint::aliases::U256> for U256 {
 impl Into<ruint::aliases::U256> for U256 {
     fn into(self) -> ruint::aliases::U256 {
         ruint::aliases::U256::from_str(&self.0.to_string()).unwrap()
+    }
+}
+
+impl From<num_bigint::BigUint> for U256 {
+    fn from(value: num_bigint::BigUint) -> U256 {
+        value.into()
+    }
+}
+
+impl Into<num_bigint::BigUint> for U256 {
+    fn into(self) -> num_bigint::BigUint {
+        num_bigint::BigUint::from_str(&self.0.to_string()).unwrap()
+    }
+}
+
+impl From<U256Original> for U256 {
+    fn from(value: U256Original) -> U256 {
+        U256(value)
+    }
+}
+
+impl Into<U256Original> for U256 {
+    fn into(self) -> U256Original {
+        self.0
     }
 }
 
@@ -276,7 +352,7 @@ const fn mask(bits: usize) -> u64 {
 }
 
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 #[tuple_struct_original_mapping(BytesOriginal)]
 #[pyclass(module = "web3_rush")]
 pub struct Bytes(pub BytesOriginal);
@@ -284,8 +360,10 @@ pub struct Bytes(pub BytesOriginal);
 #[derive(FromPyObject, Clone)]
 pub enum BlockId {
     /// By Hash
+    #[pyo3(transparent)]
     Hash(H256),
     /// By Number
+    #[pyo3(transparent)]
     Number(BlockNumberParser),
 }
 
@@ -302,27 +380,32 @@ impl Into<BlockIdOriginal> for BlockId {
     }
 }
 
-use pyo3::types::{PyDict, PyString};
-
 #[pyclass(module = "web3_rush")]
-#[derive(Clone)]
+#[derive(Clone, Deserialize)]
 #[struct_original_mapping(TransactionRequestOriginal)]
 pub struct TransactionRequest {
     /// Sender address
     pub from: Option<Address>,
     /// Recipient address (None for contract creation)
+    #[serde(flatten)]
     pub to: Option<NameOrAddress>,
     /// Supplied gas (None for sensible default)
+    #[serde(flatten)]
     pub gas: Option<U256>,
     /// Gas price (None for sensible default)
+    #[serde(flatten)]
     pub gas_price: Option<U256>,
     /// Transfered value (None for no transfer)
+    #[serde(flatten)]
     pub value: Option<U256>,
     /// Transaction data (None for empty bytes)
+    #[serde(flatten)]
     pub data: Option<Bytes>,
     /// Transaction nonce (None for next available nonce)
+    #[serde(flatten)]
     pub nonce: Option<U256>,
     /// Chain ID (None for mainnet)
+    #[serde(flatten)]
     pub chain_id: Option<U64>,
 }
 
@@ -331,7 +414,7 @@ use ethers::types::transaction::eip2930::Eip2930TransactionRequest as Eip2930Tra
 use ethers::types::transaction::eip2930::AccessList as AccessListOriginal;
 
 #[pyclass(module = "web3_rush")]
-#[derive(Clone)]
+#[derive(Clone, Deserialize)]
 #[struct_original_mapping(Eip2930TransactionRequestOriginal)]
 pub struct Eip2930TransactionRequest {
     pub tx: TransactionRequest,
@@ -339,13 +422,13 @@ pub struct Eip2930TransactionRequest {
 }
 
 #[pyclass(module = "web3_rush")]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Deserialize)]
 #[tuple_struct_original_mapping(AccessListOriginal)]
 pub struct AccessList(pub AccessListOriginal);
 
 
 #[pyclass(module = "web3_rush")]
-#[derive(From, Into, Clone)]
+#[derive(From, Into, Clone, Deserialize)]
 #[struct_original_mapping(Eip1559TransactionRequestOriginal)]
 pub struct Eip1559TransactionRequest {
     /// Sender address or ENS name
@@ -355,16 +438,20 @@ pub struct Eip1559TransactionRequest {
     pub to: Option<NameOrAddress>,
 
     /// Supplied gas (None for sensible default)
+    #[serde(flatten)]
     pub gas: Option<U256>,
 
     /// Transferred value (None for no transfer)
+    #[serde(flatten)]
     pub value: Option<U256>,
 
     /// The compiled code of a contract OR the first 4 bytes of the hash of the
     /// invoked method signature and encoded parameters. For details see Ethereum Contract ABI
+    #[serde(flatten)]
     pub data: Option<Bytes>,
 
     /// Transaction nonce (None for next available nonce)
+    #[serde(flatten)]
     pub nonce: Option<U256>,
 
     pub access_list: AccessList,
@@ -378,19 +465,22 @@ pub struct Eip1559TransactionRequest {
     /// priority fee.
     ///
     /// More context [here](https://hackmd.io/@q8X_WM2nTfu6nuvAzqXiTQ/1559-wallets)
+    #[serde(flatten)]
     pub max_priority_fee_per_gas: Option<U256>,
 
     /// Represents the maximum amount that a user is willing to pay for their tx (inclusive of
     /// baseFeePerGas and maxPriorityFeePerGas). The difference between maxFeePerGas and
     /// baseFeePerGas + maxPriorityFeePerGas is “refunded” to the user.
+    #[serde(flatten)]
     pub max_fee_per_gas: Option<U256>,
 
     /// Chain ID (None for mainnet)
+    #[serde(flatten)]
     pub chain_id: Option<U64>,
 }
 
 
-#[derive(FromPyObject, Clone)]
+#[derive(FromPyObject, Clone, EnumIntoPy, Deserialize)]
 #[tuple_enum_original_mapping(TypedTransactionOriginal)]
 pub enum TypedTransaction {
     #[pyo3(transparent)]

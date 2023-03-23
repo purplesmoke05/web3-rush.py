@@ -15,12 +15,15 @@ use exceptions::wrap_provider_error;
 use exceptions::wrap_web3_error;
 use pyo3::exceptions::PyTypeError;
 use pyo3::{prelude::*};
+use pythonize::depythonize;
 use tokio::runtime::Runtime;
 use types::Address;
 use types::AnyStr;
 use types::BlockId;
 use types::BlockNumberParser;
 use types::Bytes;
+use types::Eip1559TransactionRequest;
+use types::Eip2930TransactionRequest;
 use types::FeeHistory;
 use types::H256;
 use types::NameOrAddress;
@@ -188,7 +191,21 @@ impl EthHttp {
         }
     }
 
-    pub fn send_transaction(&self, tx: TypedTransaction) -> PyResult<H256> {
+    pub fn send_transaction(&self, tx: PyObject) -> PyResult<H256> {
+        let tx = Python::with_gil(|py| {
+            match depythonize::<TransactionRequest>(tx.as_ref(py)) {
+                Ok(res) => Ok(TypedTransaction::Legacy(res)),
+                Err(err) => match depythonize::<Eip1559TransactionRequest>(tx.as_ref(py)) {
+                    Ok(res) => Ok(TypedTransaction::Eip1559(res)),
+                    Err(err) => match depythonize::<Eip2930TransactionRequest>(tx.as_ref(py)) {
+                        Ok(res) => Ok(TypedTransaction::Eip2930(res)),
+                        Err(err) => {
+                            return Err(err);
+                        }
+                    }
+                },
+            }
+        })?;
         match block_on(self.0.send_transaction::<TypedTransaction>(tx, None)) {
             Ok(result) => {
                 Ok(types::H256(H256Original::from_slice(result.as_ref())))

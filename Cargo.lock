@@ -1928,6 +1928,7 @@ dependencies = [
  "autocfg",
  "num-integer",
  "num-traits",
+ "serde",
 ]
 
 [[package]]
@@ -2280,6 +2281,7 @@ dependencies = [
  "pyo3-build-config",
  "pyo3-ffi",
  "pyo3-macros",
+ "serde",
  "unindent",
 ]
 
@@ -2355,6 +2357,16 @@ dependencies = [
  "proc-macro2",
  "quote 1.0.26",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "pythonize"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a0e1bbcd2a3856284bf4f4ef09ccb1157e9467847792754556f153ea3fe6b42"
+dependencies = [
+ "pyo3",
+ "serde",
 ]
 
 [[package]]
@@ -2545,6 +2557,7 @@ dependencies = [
  "pyo3",
  "ruint-macro",
  "rustc_version",
+ "serde",
  "thiserror",
 ]
 
@@ -3471,6 +3484,7 @@ dependencies = [
  "pyo3",
  "pyo3-asyncio",
  "pyo3-built",
+ "pythonize",
  "ruint",
  "rustc-hex",
  "serde",

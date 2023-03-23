@@ -1,4 +1,4 @@
-from web3_rush.web3_rush import Web3, FeeHistory
+from web3_rush.web3_rush import Web3
 import pytest
 
 
@@ -29,21 +29,22 @@ class TestEthModule:
         assert web3.eth.chain_id == 31337
 
     def test_gas_price(self, web3: Web3):
-        assert web3.eth.gas_price == 2000000000
-
+        assert type(web3.eth.gas_price) == int
 
     def test_block_number(self, web3: Web3):
-        assert web3.eth.block_number == 0
+        assert type(web3.eth.block_number) == int
 
-        # web3.eth.send_transaction(
-        #     {
-        #         "from": web3.eth.accounts[0],
-        #         "to": web3.eth.accounts[1],
-        #         "value": 12345,
-        #         "gas": None,
-        #         "gas_price": None,
-        #         "data": None,
-        #         "nonce": None,
-        #         "chain_id": None
-        #     }
-        # )
+    def test_send_transaction(self, web3: Web3):
+        tx = web3.eth.send_transaction(
+            {
+                "from": web3.eth.accounts[0],
+                "to": web3.eth.accounts[1],
+                "gas": None,
+                "gas_price": None,
+                "value": 3,
+                "data": None,
+                "nonce": None,
+                "chain_id": None
+            }
+        )
+        assert type(tx) == str

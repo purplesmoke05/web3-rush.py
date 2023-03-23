@@ -6,11 +6,4 @@ services:
     ports:
       - "8545:8545"
     command:
-      - anvil
-      - -p
-      - '8545'
-      - --host
-      - '0.0.0.0'
-      - --hardfork
-      - 'london'
-      - --prune-history
+      - anvil -p 8545 --host 0.0.0.0 --hardfork london --prune-history

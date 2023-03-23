@@ -1,0 +1,15 @@
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  unit-test:
+    name: "Unit test"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run anvil
+        run: docker-compose up -d
+      - name: Run pytest
+        run: make test
