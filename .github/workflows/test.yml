@@ -25,6 +25,9 @@ jobs:
           poetry-version: ${{ matrix.poetry-version }}
       - name: Run anvil
         run: docker-compose up -d
+      - uses: PyO3/maturin-action@v1
+        with:
+          command: develop
       - name: Run pytest
         run: make test
       
