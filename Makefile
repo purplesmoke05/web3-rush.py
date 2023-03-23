@@ -15,4 +15,4 @@ test: build
 	poetry run pytest --benchmark-skip -s tests/*
 
 b: build
-	poetry run pytest -v --benchmark-only --benchmark-verbose --benchmark-group-by=func --benchmark-sort=fullname
+	poetry run pytest -v --benchmark-only --benchmark-json output.json --benchmark-verbose --benchmark-group-by=func --benchmark-sort=fullname

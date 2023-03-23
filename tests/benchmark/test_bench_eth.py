@@ -8,11 +8,13 @@ class TestBenchEthBlockNumber:
     def rush_block_number(self, web3: Web3):
         _ = web3.eth.block_number
 
-    def test_rush_block_number(self, benchmark, web3: Web3):
-        ret = benchmark.pedantic(self.rush_block_number, kwargs={"web3":web3}, rounds=100, iterations=10)
-
-    def test_org_block_number(self, benchmark, web3_original):
-        ret = benchmark.pedantic(self.org_block_number, kwargs={"web3_original": web3_original}, rounds=100, iterations=10)
+    @pytest.mark.parametrize(
+        "case", ["web3", "original"]
+    )
+    def test_block_number(self, case, benchmark, web3_original, web3):
+        kwargs = {"web3_original": web3_original} if case == "original" else {"web3": web3}
+        target_func = self.org_block_number if case == "original" else self.rush_block_number
+        benchmark.pedantic(target_func, kwargs=kwargs, rounds=100, iterations=10)
 
 class TestBenchEthChainId:    
     def org_chain_id(self, web3_original):
@@ -21,24 +23,28 @@ class TestBenchEthChainId:
     def rush_chain_id(self, web3: Web3):
         _ = web3.eth.chain_id
         
-    def test_rush_chain_id(self, benchmark, web3: Web3):
-        ret = benchmark.pedantic(self.rush_chain_id, kwargs={"web3":web3}, rounds=100, iterations=10)
-
-    def test_org_chain_id(self, benchmark, web3_original):
-        ret = benchmark.pedantic(self.org_chain_id, kwargs={"web3_original": web3_original}, rounds=100, iterations=10)
+    @pytest.mark.parametrize(
+        "case", ["web3", "original"]
+    )
+    def test_chain_id(self, case, benchmark, web3_original, web3):
+        kwargs = {"web3_original": web3_original} if case == "original" else {"web3": web3}
+        target_func = self.org_chain_id if case == "original" else self.rush_chain_id
+        benchmark.pedantic(target_func, kwargs=kwargs, rounds=100, iterations=10)
 
 class TestBenchEthAccounts:
     def org_accounts(self, web3_original):
-        a = web3_original.eth.accounts
+        _ = web3_original.eth.accounts
 
     def rush_accounts(self, web3: Web3):
         _ = web3.eth.accounts
         
-    def test_org_accounts(self, benchmark, web3_original):
-        ret = benchmark.pedantic(self.org_accounts, kwargs={"web3_original": web3_original}, rounds=100, iterations=10)
-    
-    def test_rush_accounts(self, benchmark, web3: Web3):
-        ret = benchmark.pedantic(self.rush_accounts, kwargs={"web3":web3}, rounds=100, iterations=10)
+    @pytest.mark.parametrize(
+        "case", ["web3", "original"]
+    )
+    def test_accounts(self, case, benchmark, web3_original, web3):
+        kwargs = {"web3_original": web3_original} if case == "original" else {"web3": web3}
+        target_func = self.org_accounts if case == "original" else self.rush_accounts
+        benchmark.pedantic(target_func, kwargs=kwargs, rounds=100, iterations=10)
 
 class TestBenchEthSendTransaction:
     def org_send_transaction(self, web3_original):
@@ -64,8 +70,10 @@ class TestBenchEthSendTransaction:
             }
         )
         
-    def test_org_send_transaction(self, benchmark, web3_original):
-        ret = benchmark.pedantic(self.org_send_transaction, kwargs={"web3_original": web3_original}, rounds=100, iterations=10)
-    
-    def test_rush_send_transaction(self, benchmark, web3: Web3):
-        ret = benchmark.pedantic(self.rush_send_transaction, kwargs={"web3":web3}, rounds=100, iterations=10)
+    @pytest.mark.parametrize(
+        "case", ["web3", "original"]
+    )
+    def test_send_transaction(self, case, benchmark, web3_original, web3):
+        kwargs = {"web3_original": web3_original} if case == "original" else {"web3": web3}
+        target_func = self.org_send_transaction if case == "original" else self.rush_send_transaction
+        benchmark.pedantic(target_func, kwargs=kwargs, rounds=100, iterations=10)
