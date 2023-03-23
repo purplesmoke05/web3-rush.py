@@ -25,9 +25,14 @@ jobs:
           poetry-version: ${{ matrix.poetry-version }}
       - name: Run anvil
         run: docker-compose up -d
-      - uses: PyO3/maturin-action@v1
+      - name: Install package deps
+        run: | 
+          poetry install
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
         with:
-          command: develop
+          toolchain: stable
+          profile: minimal
       - name: Run pytest
         run: make test
       
