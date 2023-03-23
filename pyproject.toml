@@ -22,7 +22,6 @@ pdoc3 = "^0.10.0"
 maturin = ">=0.13,<0.14"
 web3 = "^5.31.3"
 pytest-benchmark = "^4.0.0"
-setuptools = "^67.6.0"
 
 [tool.black]
 line-length = 100
