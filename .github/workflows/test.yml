@@ -30,8 +30,8 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
+          override: true
       - name: Run anvil
         run: docker-compose up -d
       - name: Run pytest
         run: make test
-      

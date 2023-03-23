@@ -5,8 +5,6 @@ description = "Web3 Client for Python which enforced by rust."
 authors = ["Yosuke Otosu <yosuke.otosu@gmail.com>"]
 license = "GPL-3.0-only"
 readme = "README.md"
-homepage = "https://github.com/gabriel-milan/pyo3-project-template"
-repository = "https://github.com/gabriel-milan/pyo3-project-template"
 keywords = ["python", "template", "pyo3", "rust"]
 
 [tool.poetry.dependencies]
