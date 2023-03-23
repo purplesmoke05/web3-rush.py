@@ -23,8 +23,6 @@ jobs:
         uses: abatilo/actions-poetry@v2
         with:
           poetry-version: ${{ matrix.poetry-version }}
-      - name: Run anvil
-        run: docker-compose up -d
       - name: Install package deps
         run: | 
           poetry install
@@ -33,6 +31,8 @@ jobs:
         with:
           toolchain: stable
           profile: minimal
+      - name: Run anvil
+        run: docker-compose up -d
       - name: Run pytest
         run: make test
       
