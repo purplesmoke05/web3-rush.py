@@ -1,7 +1,13 @@
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::{quote, ToTokens, TokenStreamExt};
-use syn::{parse_macro_input, ImplItem, ItemEnum, Result, ItemImpl, DeriveInput, punctuated::Punctuated, Path, Token, ItemStruct, ItemType, ItemTraitAlias, Item, AttributeArgs, parse::{ParseBuffer, ParseStream, Parse}, Data, Fields, Type, PathSegment, PathArguments, GenericArgument};
+use syn::{
+    parse::{Parse, ParseBuffer, ParseStream},
+    parse_macro_input,
+    punctuated::Punctuated,
+    AttributeArgs, Data, DeriveInput, Fields, GenericArgument, ImplItem, Item, ItemEnum, ItemImpl,
+    ItemStruct, ItemTraitAlias, ItemType, Path, PathArguments, PathSegment, Result, Token, Type,
+};
 
 /// Add mappings to and from another enum that has the exact same fields.
 ///
@@ -57,10 +63,7 @@ pub fn enum_original_mapping(original: TokenStream, item: TokenStream) -> TokenS
 }
 
 #[proc_macro_attribute]
-pub fn tuple_enum_original_mapping(
-    args: TokenStream,
-    input: TokenStream,
-) -> TokenStream {
+pub fn tuple_enum_original_mapping(args: TokenStream, input: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as syn::AttributeArgs);
     let input = parse_macro_input!(input as DeriveInput);
     let input2 = input.clone();
@@ -257,12 +260,12 @@ pub fn struct_original_mapping(original: TokenStream, item: TokenStream) -> Toke
     let mut new_stream = proc_macro2::TokenStream::from(item.clone());
     let input = parse_macro_input!(item as DeriveInput);
     let orig = parse_macro_input!(original as syn::Ident);
-    
+
     let target_name = input.ident;
     let fields = match input.data {
         Data::Struct(s) => match s.fields {
             Fields::Named(named) => named.named,
-            _ => panic!("This macro supports only named fields.")
+            _ => panic!("This macro supports only named fields."),
         },
         _ => panic!("This macro supports only structs."),
     };
@@ -389,6 +392,6 @@ pub fn tuple_struct_original_mapping(attr: TokenStream, item: TokenStream) -> To
         }
     };
     new_stream.extend(into_impl);
-    
+
     TokenStream::from(new_stream)
 }
