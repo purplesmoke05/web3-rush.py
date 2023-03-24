@@ -1,12 +1,8 @@
 use std::io::Error;
 
-use ethers::{providers::ProviderError};
+use ethers::providers::ProviderError;
 use hex::FromHexError;
-use pyo3::{
-    create_exception,
-    exceptions::{PyException},
-    prelude::*,
-};
+use pyo3::{create_exception, exceptions::PyException, prelude::*};
 
 create_exception!(exceptions, BaseWeb3RushError, PyException);
 
@@ -32,8 +28,14 @@ pub fn wrap_hex_error(error: hex::FromHexError) -> pyo3::PyErr {
 
 pub fn init_module(py: Python, parent_module: &PyModule, library: &PyModule) -> PyResult<()> {
     let submod = PyModule::new(py, "exceptions")?;
-    submod.add(stringify!(BaseWeb3RushError), py.get_type::<BaseWeb3RushError>())?;
-    library.add(stringify!(BaseWeb3RushError), py.get_type::<BaseWeb3RushError>())?;
+    submod.add(
+        stringify!(BaseWeb3RushError),
+        py.get_type::<BaseWeb3RushError>(),
+    )?;
+    library.add(
+        stringify!(BaseWeb3RushError),
+        py.get_type::<BaseWeb3RushError>(),
+    )?;
 
     parent_module.add_submodule(submod)?;
     Ok(())
