@@ -1,9 +1,14 @@
 use std::io::Error;
 
 use ethers::providers::ProviderError;
+use ethers::signers::WalletError;
 use pyo3::{create_exception, exceptions::PyException, prelude::*};
 
 create_exception!(exceptions, BaseWeb3RushError, PyException);
+
+pub fn wrap_from_wallet_error(error: WalletError) -> pyo3::PyErr {
+    return BaseWeb3RushError::new_err(format!("From wallet error: {:?}", error));
+}
 
 pub fn wrap_from_hex_error(error: rustc_hex::FromHexError) -> pyo3::PyErr {
     return BaseWeb3RushError::new_err(format!("From hex error: {:?}", error));

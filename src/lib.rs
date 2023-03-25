@@ -9,10 +9,13 @@ use async_std::task::block_on;
 use derive_more::From;
 use derive_more::Into;
 use ethers::providers::Middleware;
+use ethers::signers::Wallet;
 use ethers::types::Address as AddressOriginal;
 use ethers::types::U256 as U256Original;
+use exceptions::wrap_from_wallet_error;
 use exceptions::wrap_parse_error;
 use exceptions::wrap_provider_error;
+use num_bigint::BigInt;
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pythonize::depythonize;
@@ -39,13 +42,14 @@ use types::TxpoolStatus;
 use types::H256;
 use utils::add_0x_prefix;
 use utils::encode_hex;
+use utils::from_wei;
 use utils::to_hex_i32;
-use utils::to_int;
+use utils::{to_int, to_wei};
 pub mod exceptions;
 pub mod types;
 use num_bigint::BigUint;
 use ruint::aliases::U256;
-use types::{HexStr, Primitives, TransactionRequest, TypedTransaction};
+use types::{HexStr, Number, Primitives, TransactionRequest, TypedTransaction};
 
 #[derive(From, Into)]
 #[pyclass(module = "web3_rush")]
@@ -622,6 +626,28 @@ impl Web3ApiHttp {
         text: Option<String>,
     ) -> PyResult<isize> {
         to_int(primitive, hexstr, text)
+    }
+
+    #[staticmethod]
+    pub fn to_wei(number: Number, unit: String) -> PyResult<BigInt> {
+        to_wei(number, unit)
+    }
+
+    #[staticmethod]
+    #[allow(non_snake_case)]
+    pub fn toWei(number: Number, unit: String) -> PyResult<BigInt> {
+        to_wei(number, unit)
+    }
+
+    #[staticmethod]
+    pub fn from_wei(number: Number, unit: String) -> PyResult<f64> {
+        from_wei(number, unit)
+    }
+
+    #[staticmethod]
+    #[allow(non_snake_case)]
+    pub fn fromWei(number: Number, unit: String) -> PyResult<f64> {
+        from_wei(number, unit)
     }
 }
 

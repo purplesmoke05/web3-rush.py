@@ -13,6 +13,8 @@ use ethers::types::{
 };
 use ethers::utils::to_checksum;
 use hex::ToHex;
+use num_bigfloat::BigFloat as BigFloatOriginal;
+use num_bigint::BigInt;
 use pyo3::exceptions::PyOverflowError;
 use pyo3::types::{PyBool, PyString};
 use pyo3::{
@@ -27,6 +29,16 @@ use std::str::FromStr;
 use web3_rush_macros::{
     struct_original_mapping, tuple_enum_original_mapping, tuple_struct_original_mapping,
 };
+
+#[derive(FromPyObject, Debug)]
+pub enum Number {
+    #[pyo3(transparent, annotation = "int, decimal.Decimal")]
+    Int(BigInt),
+    #[pyo3(transparent, annotation = "float")]
+    Float(f64),
+    #[pyo3(transparent, annotation = "str")]
+    String(String),
+}
 
 #[derive(FromPyObject, Debug)]
 pub enum Primitives {

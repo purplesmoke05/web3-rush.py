@@ -34,5 +34,23 @@ class TestWeb3Module:
             return
         assert web3.web3.to_int(data) == expect
 
+    @pytest.mark.parametrize(
+        "number, unit, expect",
+        [
+            (1, "ether", 1000000000000000000),
+        ],
+    )
+    def test_to_wei(self, number, unit, expect, web3: Web3):
+        assert web3.web3.to_wei(number, unit) == expect
+
+    @pytest.mark.parametrize(
+        "number, unit, expect",
+        [
+            (1000000000000000000, "ether", 1),
+        ],
+    )
+    def test_from_wei(self, number, unit, expect, web3: Web3):
+        assert web3.web3.from_wei(number, unit) == expect
+
     def test_client_version(self, web3: Web3):
         assert web3.web3.client_version == "anvil/v0.1.0"

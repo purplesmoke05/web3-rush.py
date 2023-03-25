@@ -2,9 +2,8 @@ use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::{quote, ToTokens};
 use syn::{
-    parse_macro_input,
-    Data, DeriveInput, Fields, GenericArgument, ItemEnum, 
-    ItemStruct, PathArguments, PathSegment, Type,
+    parse_macro_input, Data, DeriveInput, Fields, GenericArgument, ItemEnum, ItemStruct,
+    PathArguments, PathSegment, Type,
 };
 
 /// Add mappings to and from another enum that has the exact same fields.

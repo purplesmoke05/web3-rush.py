@@ -295,6 +295,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dabbe35f96fb9507f7330793dc490461b2962659ac5d427181e451a623751d1"
 
 [[package]]
+name = "bigdecimal"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6aaf33151a6429fe9211d1b276eafdf70cdff28b071e76c0b0e1503221ea3744"
+dependencies = [
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
 name = "bincode"
 version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1920,6 +1931,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "num-bigfloat"
+version = "1.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a56a51331d84e5827f5f875945e505f3c4e54a13fb31153449b1c994c159b883"
+dependencies = [
+ "num-traits",
+ "rand",
+ "serde",
+]
+
+[[package]]
 name = "num-bigint"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3470,6 +3492,7 @@ version = "0.1.0"
 dependencies = [
  "accessors",
  "async-std",
+ "bigdecimal",
  "built",
  "byteorder",
  "derivative",
@@ -3480,7 +3503,9 @@ dependencies = [
  "hex",
  "hex-string",
  "inter-struct",
+ "num-bigfloat",
  "num-bigint",
+ "once_cell",
  "pyo3",
  "pyo3-asyncio",
  "pyo3-built",
