@@ -138,7 +138,7 @@
               for (const bench of benches) {
 
                 const result = { commit, date, tool, bench };
-                const typ = bench.name.indexOf("[original]") ? compete_id : self_id;
+                const typ = bench.name.indexOf("[original]") != -1 ? compete_id : self_id;
 
                 const baseName = bench.name.replace(/\[[^\]]*\]/g, '');
 
