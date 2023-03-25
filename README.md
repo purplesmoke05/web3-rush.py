@@ -2,26 +2,28 @@
 
 web3-rush.py is a Python library designed for fast and easy interaction with the Ethereum blockchain🌐. It provides an interface similar to web3.py while utilizing Rust internally, resulting in significantly faster performance⚡.
 
-## Performance 📈
+## 📈 Performance
+
+![Screenshot from 2023-03-26 08-31-26](https://user-images.githubusercontent.com/15183665/227747288-773fe443-aa54-445a-8f52-381e01f9c17f.png)
 
 We have benchmarked the execution speed of web3-rush.py against web3.py. The results can be viewed on a separate page here(https://purplesmoke05.github.io/web3-rush.py/dev/bench/). According to the benchmarks, web3-rush.py is approximately 200% faster or more compared to web3.py.
 
 
-## Key Features 🔑
+## 🔑 Key Features
 - Creating and managing Ethereum accounts 👤
 - Sending and receiving Ether 💸
 - Deploying and executing smart contracts 📜
 - Retrieving data and transaction information on the Ethereum blockchain 🔍
 - Listening and filtering events 🔔
 
-## Installation 💻
+## 💻 Installation
 To install web3-rush.py, run the following command:
 
 ```sh
 pip install web3-rush
 ```
 
-## Usage 📚
+## 📚 Usage
 
 The usage of web3-rush.py is very similar to web3.py. Here's a simple example:
 
@@ -38,9 +40,9 @@ account = web3.eth.accounts[0]
 transaction = {
     "from": account,
     "to": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-    "value": web3.toWei(1, "ether"),
+    "value": web3.web3.toWei(1, "ether"),
     "gas": 21000,
-    "gasPrice": web3.toWei("50", "gwei"),
+    "gasPrice": web3.web3.toWei("50", "gwei"),
     "nonce": web3.eth.get_transaction_count(account),
 }
 
@@ -53,14 +55,14 @@ transaction_receipt = web3.eth.wait_for_transaction_receipt(transaction_hash)
 print(transaction_receipt)
 ```
 
-## Documentation 📖
+## 📖 Documentation
 
 For detailed documentation, please visit here(TBD).
 
-## Contributing 🤝
+## 🤝 Contributing 
 
 Contributions to the project are highly appreciated! We welcome bug reports, feature suggestions, pull requests, and any other form of contribution.
 
-## License ⚖️
+## ⚖️ License 
 
 web3-rush.py is released under the GNU General Public License.
