@@ -19,4 +19,4 @@ b: build
 
 format:
 	cargo fmt
-	poetry run black tests
+	poetry run black tests web3_rush
