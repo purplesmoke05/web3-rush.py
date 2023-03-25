@@ -99,7 +99,7 @@ class TestBenchEthWaitForTransactionReceipt:
             web3_mod = web3_original
         tx = web3_mod.eth.send_transaction(
             {
-                "from": web3.eth.accounts[0],
+                "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
                 "to": "0xd3CdA913deB6f67967B99D67aCDFa1712C293601",
                 "value": 3,
             }
@@ -129,7 +129,7 @@ class TestBenchEthGetTransaction:
             web3_mod = web3_original
         tx = web3_mod.eth.send_transaction(
             {
-                "from": web3.eth.accounts[0],
+                "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
                 "to": "0xd3CdA913deB6f67967B99D67aCDFa1712C293601",
                 "value": 3,
             }
@@ -159,7 +159,7 @@ class TestBenchEthGetTransactionCount:
             web3_mod = web3_original
         tx = web3_mod.eth.send_transaction(
             {
-                "from": web3.eth.accounts[0],
+                "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
                 "to": "0xd3CdA913deB6f67967B99D67aCDFa1712C293601",
                 "value": 3,
             }

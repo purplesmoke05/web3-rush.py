@@ -17,6 +17,7 @@ use ethers::types::U256 as U256Original;
 use exceptions::wrap_parse_error;
 use exceptions::wrap_provider_error;
 use exceptions::wrap_web3_error;
+use num_bigint::BigInt;
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pythonize::depythonize;
@@ -34,9 +35,14 @@ use types::FeeHistory;
 use types::Filter;
 use types::Log;
 use types::NameOrAddress;
+use types::NodeInfo;
+use types::PeerInfo;
 use types::SyncingStatus;
 use types::Transaction;
 use types::TransactionReceipt;
+use types::TxpoolContent;
+use types::TxpoolInspect;
+use types::TxpoolStatus;
 use types::H256;
 use utils::add_0x_prefix;
 use utils::encode_hex;
@@ -44,14 +50,13 @@ use utils::to_hex_i32;
 use utils::to_int;
 pub mod exceptions;
 pub mod types;
+use num_bigint::BigUint;
 use ruint::aliases::U256;
 use types::{HexStr, Primitives, TransactionRequest, TypedTransaction};
 
 #[derive(From, Into)]
 #[pyclass(module = "web3_rush")]
 pub struct EthHttp(Arc<ethers::providers::Provider<ethers::providers::Http>>);
-use num_bigint::{BigInt, BigUint};
-use web3_rush_macros::tuple_struct_original_mapping;
 
 #[pymethods]
 impl EthHttp {
@@ -352,6 +357,197 @@ impl EthHttp {
     }
 }
 
+#[derive(From, Into)]
+#[pyclass(module = "web3_rush")]
+pub struct GethHttp {
+    pub miner: GethMinerHttp,
+    pub admin: GethAdminHttp,
+    // pub personal: GethPersonalHttp,
+    pub txpool: GethTxPoolHttp,
+}
+
+#[derive(From, Into)]
+#[pyclass(module = "web3_rush")]
+pub struct GethPersonalHttp(Arc<ethers::providers::Provider<ethers::providers::Http>>);
+
+#[derive(From, Into)]
+#[pyclass(module = "web3_rush")]
+pub struct GethTxPoolHttp(Arc<ethers::providers::Provider<ethers::providers::Http>>);
+
+#[pymethods]
+impl GethTxPoolHttp {
+    pub fn inspect(&self) -> PyResult<TxpoolInspect> {
+        match block_on(self.0.txpool_inspect()) {
+            Ok(result) => Ok(result.into()),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn status(&self) -> PyResult<TxpoolStatus> {
+        match block_on(self.0.txpool_status()) {
+            Ok(result) => Ok(result.into()),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn content(&self) -> PyResult<TxpoolContent> {
+        match block_on(self.0.txpool_content()) {
+            Ok(result) => Ok(result.into()),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+}
+
+#[derive(From, Into)]
+#[pyclass(module = "web3_rush")]
+pub struct GethAdminHttp(Arc<ethers::providers::Provider<ethers::providers::Http>>);
+
+#[pymethods]
+impl GethAdminHttp {
+    pub fn datadir(&self) -> PyResult<String> {
+        match block_on(self.0.request("admin_datadir", ())) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn add_peer(&self, peer: String) -> PyResult<bool> {
+        match block_on(self.0.add_peer(peer)) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn peers(&self) -> PyResult<Vec<PeerInfo>> {
+        match block_on(self.0.peers()) {
+            Ok(result) => Ok(result.into_iter().map(|v| v.into()).collect()),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn node_info(&self) -> PyResult<NodeInfo> {
+        match block_on(self.0.node_info()) {
+            Ok(result) => Ok(result.into()),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn start_http(&self) -> PyResult<bool> {
+        match block_on(self.0.request("admin_startHTTP", ())) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn start_ws(&self) -> PyResult<bool> {
+        match block_on(self.0.request("admin_startWS", ())) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn stop_http(&self) -> PyResult<bool> {
+        match block_on(self.0.request("admin_stopHTTP", ())) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn stop_ws(&self) -> PyResult<bool> {
+        match block_on(self.0.request("admin_stopWS", ())) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+}
+
+#[derive(From, Into)]
+#[pyclass(module = "web3_rush")]
+pub struct GethMinerHttp(Arc<ethers::providers::Provider<ethers::providers::Http>>);
+
+#[pymethods]
+impl GethMinerHttp {
+    pub fn make_dag(&self, block_number: U256) -> PyResult<bool> {
+        match block_on(self.0.request("miner_makeDag", block_number)) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn set_extra(&self, extra_data: H256) -> PyResult<()> {
+        match block_on(self.0.request("miner_setExtra", extra_data.0)) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn set_gas_price(&self, gas_price: U256) -> PyResult<()> {
+        match block_on(self.0.request("miner_setGasPrice", gas_price)) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn start(&self, num_of_threads: usize) -> PyResult<()> {
+        match block_on(self.0.start_mining(Some(num_of_threads))) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn stop(&self) -> PyResult<()> {
+        match block_on(self.0.stop_mining()) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn start_auto_dag(&self) -> PyResult<()> {
+        match block_on(self.0.request("miner_startAutoDag", ())) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    pub fn stop_auto_dag(&self) -> PyResult<()> {
+        match block_on(self.0.request("miner_stopAutoDag", ())) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+}
+
+#[derive(From, Into)]
+#[pyclass(module = "web3_rush")]
+pub struct NetHttp(Arc<ethers::providers::Provider<ethers::providers::Http>>);
+
+#[pymethods]
+impl NetHttp {
+    #[getter]
+    pub fn version(&self) -> PyResult<String> {
+        match block_on(self.0.get_net_version()) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    #[getter]
+    pub fn peer_count(&self) -> PyResult<U256> {
+        match block_on(self.0.peers()) {
+            Ok(result) => Ok(U256Original::from(result.len()).into()),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+
+    #[getter]
+    pub fn listening(&self) -> PyResult<bool> {
+        match block_on(self.0.request("net_listening", ())) {
+            Ok(result) => Ok(result),
+            Err(err) => Err(wrap_provider_error(err)),
+        }
+    }
+}
+
 #[derive(From, Into, Clone)]
 #[pyclass(module = "web3_rush")]
 pub struct Web3ApiHttp(Arc<ethers::providers::Provider<ethers::providers::Http>>);
@@ -459,6 +655,10 @@ impl Web3 {
     #[getter]
     pub fn eth(&self) -> PyResult<EthHttp> {
         Ok(EthHttp(self.client.clone()))
+    }
+    #[getter]
+    pub fn net(&self) -> PyResult<NetHttp> {
+        Ok(NetHttp(self.client.clone()))
     }
 }
 
