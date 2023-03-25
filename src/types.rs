@@ -25,6 +25,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 use solders_macros::EnumIntoPy;
 use std::collections::BTreeMap;
 use std::ffi::c_uchar;
+use std::net::SocketAddr;
 use std::str::FromStr;
 use web3_rush_macros::{
     struct_original_mapping, tuple_enum_original_mapping, tuple_struct_original_mapping,

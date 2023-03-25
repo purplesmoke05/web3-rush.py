@@ -14,7 +14,7 @@ use ethers::types::Address as AddressOriginal;
 use ethers::types::U256 as U256Original;
 use exceptions::wrap_from_wallet_error;
 use exceptions::wrap_parse_error;
-use exceptions::wrap_provider_error;
+use exceptions::wrap_web3_error;
 use num_bigint::BigInt;
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
