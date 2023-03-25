@@ -7,21 +7,21 @@ web3-rush.py is a Python library designed for fast and easy interaction with the
 We have benchmarked the execution speed of web3-rush.py against web3.py. The results can be viewed on a separate page here(https://purplesmoke05.github.io/web3-rush.py/dev/bench/). According to the benchmarks, web3-rush.py is approximately 200% faster or more compared to web3.py.
 
 
-## Key Features🔑
+## Key Features 🔑
 - Creating and managing Ethereum accounts 👤
 - Sending and receiving Ether 💸
 - Deploying and executing smart contracts 📜
 - Retrieving data and transaction information on the Ethereum blockchain 🔍
-- Listening and filtering events 🎧
+- Listening and filtering events 🔔
 
-## Installation💻
+## Installation 💻
 To install web3-rush.py, run the following command:
 
 ```sh
 pip install web3-rush
 ```
 
-## Usage📚
+## Usage 📚
 
 The usage of web3-rush.py is very similar to web3.py. Here's a simple example:
 
@@ -53,14 +53,14 @@ transaction_receipt = web3.eth.wait_for_transaction_receipt(transaction_hash)
 print(transaction_receipt)
 ```
 
-## Documentation📖
+## Documentation 📖
 
 For detailed documentation, please visit here(TBD).
 
-## Contributing🤝
+## Contributing 🤝
 
 Contributions to the project are highly appreciated! We welcome bug reports, feature suggestions, pull requests, and any other form of contribution.
 
-## License⚖️
+## License ⚖️
 
 web3-rush.py is released under the GNU General Public License.
