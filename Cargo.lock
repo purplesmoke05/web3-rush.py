@@ -3478,16 +3478,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "web3-rush-macros"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote 1.0.26",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "web3-rush-py"
+name = "web3-rush"
 version = "0.1.0"
 dependencies = [
  "accessors",
@@ -3520,6 +3511,15 @@ dependencies = [
  "tokio",
  "url",
  "web3-rush-macros",
+]
+
+[[package]]
+name = "web3-rush-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote 1.0.26",
+ "syn 1.0.109",
 ]
 
 [[package]]

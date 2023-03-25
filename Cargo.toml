@@ -1,5 +1,5 @@
 [package]
-name = "web3-rush-py"
+name = "web3-rush"
 version = "0.1.0"
 edition = "2021"
 
