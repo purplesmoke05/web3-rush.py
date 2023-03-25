@@ -15,7 +15,7 @@
         margin: 8px;
         font-size: 1em;
         font-weight: 400;
-      }
+      }pyc
       header {
         margin-bottom: 8px;
         display: flex;
@@ -123,8 +123,12 @@
           benchmarkdotnet: '#178600',
           customBiggerIsBetter: '#38ff38',
           customSmallerIsBetter: '#ff3838',
+          other: '#aaaaaa',
           _: '#333333'
         };
+
+        const compete_id = "original";
+        const self_id = "rush";
 
         function init() {
           function collectBenchesPerTestCase(entries) {
@@ -132,12 +136,24 @@
             for (const entry of entries) {
               const {commit, date, tool, benches} = entry;
               for (const bench of benches) {
+
                 const result = { commit, date, tool, bench };
-                const arr = map.get(bench.name);
-                if (arr === undefined) {
-                  map.set(bench.name, [result]);
+                const typ = compete_id ? bench.name.indexOf("[original]"): "rush"
+
+                const baseName = bench.name.replace(/\[[^\]]*\]/g, '');
+
+                const innerMap = map.get(baseName);
+                if (innerMap === undefined) {
+                  const innerMap = new Map();
+                  innerMap.set(typ, [result]);
+                  map.set(baseName, innerMap);
                 } else {
-                  arr.push(result);
+                  const arr = innerMap.get(typ);
+                  if (arr == undefined) {
+                    innerMap.set(typ, [result])
+                  } else {
+                    arr.push(result);
+                  }
                 }
               }
             }
@@ -170,12 +186,13 @@
 
         function renderAllChars(dataSets) {
 
-          function renderGraph(parent, name, dataset) {
+          function renderGraph(parent, name, name2, dataset, dataset2) {
             const canvas = document.createElement('canvas');
             canvas.className = 'benchmark-chart';
             parent.appendChild(canvas);
 
-            const color = toolColors[dataset.length > 0 ? dataset[0].tool : '_'];
+            const color = toolColors["catch2"];
+            const secondColor = toolColors["other"];
             const data = {
               labels: dataset.map(d => d.commit.id.slice(0, 7)),
               datasets: [
@@ -184,7 +201,13 @@
                   data: dataset.map(d => d.bench.value),
                   borderColor: color,
                   backgroundColor: color + '60', // Add alpha for #rrggbbaa
-                }
+                },
+                {
+                  label: name2,
+                  data: dataset2.map(d => d.bench.value),
+                  borderColor: secondColor,
+                  backgroundColor: secondColor + '60', // Add alpha for #rrggbbaa
+                },
               ],
             };
             const options = {
@@ -263,8 +286,12 @@
             graphsElem.className = 'benchmark-graphs';
             setElem.appendChild(graphsElem);
 
-            for (const [benchName, benches] of benchSet.entries()) {
-              renderGraph(graphsElem, benchName, benches)
+            for (const [benchBaseName, benchMap] of benchSet.entries()) {
+              const benches = benchMap.get(self_id);
+              const benches2 = benchMap.get(compete_id);
+              const benchName = benchBaseName + "[" + self_id + "]";
+              const bench2Name = benchBaseName + "[" + compete_id + "]";
+              renderGraph(graphsElem, benchName, bench2Name, benches, benches2)
             }
           }
 
