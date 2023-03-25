@@ -1,12 +1,10 @@
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
-use quote::{quote, ToTokens, TokenStreamExt};
+use quote::{quote, ToTokens};
 use syn::{
-    parse::{Parse, ParseBuffer, ParseStream},
     parse_macro_input,
-    punctuated::Punctuated,
-    AttributeArgs, Data, DeriveInput, Fields, GenericArgument, ImplItem, Item, ItemEnum, ItemImpl,
-    ItemStruct, ItemTraitAlias, ItemType, Path, PathArguments, PathSegment, Result, Token, Type,
+    Data, DeriveInput, Fields, GenericArgument, ItemEnum, 
+    ItemStruct, PathArguments, PathSegment, Type,
 };
 
 /// Add mappings to and from another enum that has the exact same fields.
@@ -277,7 +275,7 @@ pub fn struct_original_mapping(original: TokenStream, item: TokenStream) -> Toke
             true => {
                 let unwrapped_field_type = unwrap_option(&field_type);
                 match unwrapped_field_type {
-                    Some(field_type) => quote! {
+                    Some(_) => quote! {
                         #field_name: match value.#field_name {Some(f) => Some(f.into()), None => None}
                     },
                     None => panic!("Unwrap failed"),
@@ -288,7 +286,7 @@ pub fn struct_original_mapping(original: TokenStream, item: TokenStream) -> Toke
                     true => {
                         let item_type = unwrap_item(&field_type);
                         match item_type {
-                            Some(item_type) => quote!{
+                            Some(_) => quote!{
                                 #field_name: value.#field_name.into_iter().map(|i|{i.into()}).collect()
                             },
                             None => panic!("Unwrap failed")
@@ -307,7 +305,7 @@ pub fn struct_original_mapping(original: TokenStream, item: TokenStream) -> Toke
             true => {
                 let unwrapped_field_type = unwrap_option(&field_type);
                 match unwrapped_field_type {
-                    Some(field_type) => quote! {
+                    Some(_) => quote! {
                         #field_name: match self.#field_name {Some(f) => Some(f.into()), None => None}
                     },
                     None => panic!("Unwrap failed"),
@@ -318,7 +316,7 @@ pub fn struct_original_mapping(original: TokenStream, item: TokenStream) -> Toke
                     true => {
                         let item_type = unwrap_item(&field_type);
                         match item_type {
-                            Some(item_type) => quote!{
+                            Some(_) => quote!{
                                 #field_name: self.#field_name.into_iter().map(|i|{i.into()}).collect()
                             },
                             None => panic!("Unwrap")

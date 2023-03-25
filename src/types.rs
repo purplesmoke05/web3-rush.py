@@ -1,37 +1,28 @@
+use derive_more::{Display, From, Into};
 use ethers::types::transaction::eip1559::Eip1559TransactionRequest as Eip1559TransactionRequestOriginal;
+use ethers::types::transaction::eip2718::TypedTransaction as TypedTransactionOriginal;
 use ethers::types::transaction::eip2930::AccessList as AccessListOriginal;
 use ethers::types::transaction::eip2930::Eip2930TransactionRequest as Eip2930TransactionRequestOriginal;
-use serde::Deserializer;
-
-use derive_more::{Display, From, Into};
-use ethers::types::transaction::eip2718::TypedTransaction as TypedTransactionOriginal;
-use ethers::types::Address as AddressOriginal;
-use ethers::types::BlockId as BlockIdOriginal;
-use ethers::types::BlockNumber as BlockNumberOriginal;
-use ethers::types::Bloom as BloomOriginal;
-use ethers::types::FeeHistory as FeeHistoryOriginal;
-use ethers::types::NameOrAddress as NameOrAddressOriginal;
-use ethers::types::OtherFields as OtherFieldsOriginal;
-use ethers::types::Transaction as TransactionOriginal;
-use ethers::types::TransactionRequest as TransactionRequestOriginal;
-use ethers::types::U64 as U64Original;
 use ethers::types::{
-    Bytes as BytesOriginal, TxHash as TxHashOriginal, H160 as H160Original, H256 as H256Original,
-    H64 as H64Original, U256 as U256Original,
+    Address as AddressOriginal, BlockId as BlockIdOriginal, BlockNumber as BlockNumberOriginal,
+    Bloom as BloomOriginal, Bytes as BytesOriginal, FeeHistory as FeeHistoryOriginal,
+    NameOrAddress as NameOrAddressOriginal, OtherFields as OtherFieldsOriginal,
+    Transaction as TransactionOriginal, TransactionRequest as TransactionRequestOriginal,
+    H160 as H160Original, H256 as H256Original, H64 as H64Original, U256 as U256Original,
+    U64 as U64Original,
 };
 use ethers::utils::to_checksum;
 use hex::ToHex;
 use pyo3::exceptions::PyOverflowError;
-use pyo3::types::PyBool;
-use pyo3::types::{PyBytes, PyInt, PyString};
-use pyo3::PyCell;
-use pyo3::{ffi, AsPyPointer, IntoPy, PyAny, PyErr, PyObject, PyResult, Python, ToPyObject};
-use pyo3::{pyclass, FromPyObject};
-use serde::{Deserialize, Serialize};
-use solders_macros::{enum_original_mapping, EnumIntoPy};
+use pyo3::types::{PyBool, PyString};
+use pyo3::{
+    ffi, pyclass, AsPyPointer, FromPyObject, IntoPy, PyAny, PyCell, PyErr, PyObject, PyResult,
+    Python, ToPyObject,
+};
+use serde::{Deserialize, Deserializer, Serialize};
+use solders_macros::EnumIntoPy;
 use std::collections::BTreeMap;
 use std::ffi::c_uchar;
-use std::net::SocketAddr;
 use std::str::FromStr;
 use web3_rush_macros::{
     struct_original_mapping, tuple_enum_original_mapping, tuple_struct_original_mapping,
@@ -52,12 +43,6 @@ pub enum Primitives {
 #[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 #[tuple_struct_original_mapping(H160Original)]
 pub struct Address(pub AddressOriginal);
-
-impl Address {
-    fn zero() -> Address {
-        Address(AddressOriginal::zero())
-    }
-}
 
 impl ToPyObject for Address {
     #[inline]

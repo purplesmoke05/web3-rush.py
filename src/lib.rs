@@ -1,6 +1,5 @@
 pub mod utils;
 
-use std::ops::Add;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::thread;
@@ -11,18 +10,12 @@ use derive_more::From;
 use derive_more::Into;
 use ethers::providers::Middleware;
 use ethers::types::Address as AddressOriginal;
-use ethers::types::Transaction as TransactionOriginal;
-use ethers::types::H256 as H256Original;
 use ethers::types::U256 as U256Original;
 use exceptions::wrap_parse_error;
 use exceptions::wrap_provider_error;
-use exceptions::wrap_web3_error;
-use num_bigint::BigInt;
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pythonize::depythonize;
-use serde::{Deserialize, Serialize};
-use tokio::runtime::Runtime;
 use types::Address;
 use types::AnyStr;
 use types::Block;
@@ -141,9 +134,9 @@ impl EthHttp {
         let tx = Python::with_gil(
             |py| match depythonize::<TransactionRequest>(tx.as_ref(py)) {
                 Ok(res) => Ok(TypedTransaction::Legacy(res)),
-                Err(err) => match depythonize::<Eip1559TransactionRequest>(tx.as_ref(py)) {
+                Err(_) => match depythonize::<Eip1559TransactionRequest>(tx.as_ref(py)) {
                     Ok(res) => Ok(TypedTransaction::Eip1559(res)),
-                    Err(err) => match depythonize::<Eip2930TransactionRequest>(tx.as_ref(py)) {
+                    Err(_) => match depythonize::<Eip2930TransactionRequest>(tx.as_ref(py)) {
                         Ok(res) => Ok(TypedTransaction::Eip2930(res)),
                         Err(err) => {
                             return Err(err);
@@ -166,9 +159,9 @@ impl EthHttp {
         let tx = Python::with_gil(
             |py| match depythonize::<TransactionRequest>(tx.as_ref(py)) {
                 Ok(res) => Ok(TypedTransaction::Legacy(res)),
-                Err(err) => match depythonize::<Eip1559TransactionRequest>(tx.as_ref(py)) {
+                Err(_) => match depythonize::<Eip1559TransactionRequest>(tx.as_ref(py)) {
                     Ok(res) => Ok(TypedTransaction::Eip1559(res)),
-                    Err(err) => match depythonize::<Eip2930TransactionRequest>(tx.as_ref(py)) {
+                    Err(_) => match depythonize::<Eip2930TransactionRequest>(tx.as_ref(py)) {
                         Ok(res) => Ok(TypedTransaction::Eip2930(res)),
                         Err(err) => {
                             return Err(err);
@@ -568,6 +561,7 @@ impl Web3ApiHttp {
     }
 
     #[staticmethod]
+    #[allow(non_snake_case)]
     pub fn toHex(
         primitive: Option<Primitives>,
         hexstr: Option<HexStr>,
@@ -621,6 +615,7 @@ impl Web3ApiHttp {
     }
 
     #[staticmethod]
+    #[allow(non_snake_case)]
     pub fn toInt(
         primitive: Option<Primitives>,
         hexstr: Option<HexStr>,

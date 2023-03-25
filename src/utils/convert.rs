@@ -43,6 +43,7 @@ pub fn to_hex_i32(value: i32) -> String {
     format!("0x{:x}", value)
 }
 
+#[allow(unused)]
 pub fn to_bytes(
     primitive: Option<Primitives>,
     hexstr: Option<HexStr>,

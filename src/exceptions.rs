@@ -1,7 +1,6 @@
 use std::io::Error;
 
 use ethers::providers::ProviderError;
-use hex::FromHexError;
 use pyo3::{create_exception, exceptions::PyException, prelude::*};
 
 create_exception!(exceptions, BaseWeb3RushError, PyException);
