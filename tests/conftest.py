@@ -1,5 +1,5 @@
 from web3 import Web3 as Web3Original, HTTPProvider
-from web3_rush.web3_rush import Web3
+from web3_rush import Web3
 import pytest
 
 

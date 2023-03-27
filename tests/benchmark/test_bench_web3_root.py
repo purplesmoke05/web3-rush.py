@@ -26,7 +26,7 @@ class TestWeb3ToHex:
     def rush(self, web3: Web3):
         _ = web3.to_hex(0x000F)
         _ = web3.to_hex(0)
-        _ = web3.to_hex("0x1")
+        _ = web3.to_hex(hexstr="0x1")
 
     @pytest.mark.parametrize("case", ["rush", "original"])
     def test_to_hex(self, case, benchmark, web3_original, web3):
@@ -65,7 +65,7 @@ class TestWeb3ToWei:
         _ = web3.to_wei(1.1, "ether")
 
     @pytest.mark.parametrize("case", ["rush", "original"])
-    def test_to_int(self, case, benchmark, web3_original, web3):
+    def test_to_wei(self, case, benchmark, web3_original, web3):
         kwargs = {"web3_original": web3_original} if case == "original" else {"web3": web3}
         target_func = self.org if case == "original" else self.rush
         benchmark.pedantic(target_func, kwargs=kwargs, rounds=100, iterations=10)
@@ -81,7 +81,7 @@ class TestWeb3FromWei:
         _ = web3.from_wei(1000000000000000000.1, "ether")
 
     @pytest.mark.parametrize("case", ["rush", "original"])
-    def test_to_int(self, case, benchmark, web3_original, web3):
+    def test_from_wei(self, case, benchmark, web3_original, web3):
         kwargs = {"web3_original": web3_original} if case == "original" else {"web3": web3}
         target_func = self.org if case == "original" else self.rush
         benchmark.pedantic(target_func, kwargs=kwargs, rounds=100, iterations=10)

@@ -585,94 +585,9 @@ impl Web3 {
     }
 
     #[getter]
+    #[inline]
     pub fn api(&self) -> PyResult<String> {
-        Ok("0.1.0".to_owned())
-    }
-
-    #[staticmethod]
-    #[allow(non_snake_case)]
-    pub fn toHex(
-        primitive: Option<Primitives>,
-        hexstr: Option<HexStr>,
-        text: Option<String>,
-    ) -> PyResult<String> {
-        Web3::to_hex(primitive, hexstr, text)
-    }
-
-    #[staticmethod]
-    pub fn to_hex(
-        primitive: Option<Primitives>,
-        hexstr: Option<HexStr>,
-        text: Option<String>,
-    ) -> PyResult<String> {
-        if let Some(hexstr) = hexstr {
-            Ok(add_0x_prefix(hexstr).into())
-        } else if let Some(text) = text {
-            match encode_hex(AnyStr::Str(text)) {
-                Ok(text) => Ok(text.into()),
-                Err(err) => Err(PyTypeError::new_err(err)),
-            }
-        } else {
-            match primitive {
-                Some(primitive) => match primitive {
-                    Primitives::Bool(b) => match b {
-                        true => Ok(format!("0x1")),
-                        false => Ok(format!("0x0")),
-                    },
-                    Primitives::String(str) => match encode_hex(AnyStr::Str(str)) {
-                        Ok(text) => Ok(text.into()),
-                        Err(err) => Err(PyTypeError::new_err(err)),
-                    },
-                    Primitives::Bytes(bytes) => match encode_hex(AnyStr::Bytes(bytes)) {
-                        Ok(text) => Ok(text.into()),
-                        Err(err) => Err(PyTypeError::new_err(err)),
-                    },
-                    Primitives::Int(i) => Ok(to_hex_i32(i as i32)),
-                },
-                None => Err(PyTypeError::new_err("")),
-            }
-        }
-    }
-
-    #[staticmethod]
-    pub fn to_int(
-        primitive: Option<Primitives>,
-        hexstr: Option<HexStr>,
-        text: Option<String>,
-    ) -> PyResult<isize> {
-        to_int(primitive, hexstr, text)
-    }
-
-    #[staticmethod]
-    #[allow(non_snake_case)]
-    pub fn toInt(
-        primitive: Option<Primitives>,
-        hexstr: Option<HexStr>,
-        text: Option<String>,
-    ) -> PyResult<isize> {
-        to_int(primitive, hexstr, text)
-    }
-
-    #[staticmethod]
-    pub fn to_wei(number: Number, unit: String) -> PyResult<BigInt> {
-        to_wei(number, unit)
-    }
-
-    #[staticmethod]
-    #[allow(non_snake_case)]
-    pub fn toWei(number: Number, unit: String) -> PyResult<BigInt> {
-        to_wei(number, unit)
-    }
-
-    #[staticmethod]
-    pub fn from_wei(number: Number, unit: String) -> PyResult<f64> {
-        from_wei(number, unit)
-    }
-
-    #[staticmethod]
-    #[allow(non_snake_case)]
-    pub fn fromWei(number: Number, unit: String) -> PyResult<f64> {
-        from_wei(number, unit)
+        Ok("0.1.0".to_string())
     }
 
     #[staticmethod]
@@ -705,7 +620,9 @@ impl Web3 {
 /// import the module.
 #[pymodule]
 fn web3_rush(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<Web3>()?;
+    let module = PyModule::new(_py, "module")?;
+    module.add_class::<Web3>()?;
+    m.add_submodule(module)?;
     exceptions::init_module(_py, m, m)?;
     Ok(())
 }

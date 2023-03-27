@@ -2,7 +2,7 @@
 name = "aiohttp"
 version = "3.8.4"
 description = "Async http client/server framework (asyncio)"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -22,7 +22,7 @@ speedups = ["aiodns", "brotli", "cchardet"]
 name = "aiosignal"
 version = "1.3.1"
 description = "aiosignal: a list of registered asynchronous callbacks"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -33,7 +33,7 @@ frozenlist = ">=1.1.0"
 name = "async-timeout"
 version = "4.0.2"
 description = "Timeout context manager for asyncio programs"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -41,7 +41,7 @@ python-versions = ">=3.6"
 name = "attrs"
 version = "22.2.0"
 description = "Classes Without Boilerplate"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -57,7 +57,7 @@ tests_no_zope = ["hypothesis", "pympler", "pytest (>=4.3.0)", "pytest-xdist", "c
 name = "base58"
 version = "2.1.1"
 description = "Base58 and Base58Check implementation."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -68,7 +68,7 @@ tests = ["mypy", "PyHamcrest (>=2.0.2)", "pytest (>=4.6)", "pytest-benchmark", "
 name = "bitarray"
 version = "2.7.3"
 description = "efficient arrays of booleans -- C extension"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -98,7 +98,7 @@ uvloop = ["uvloop (>=0.15.2)"]
 name = "certifi"
 version = "2022.12.7"
 description = "Python package for providing Mozilla's CA Bundle."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -114,7 +114,7 @@ python-versions = ">=3.6.1"
 name = "charset-normalizer"
 version = "3.1.0"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7.0"
 
@@ -155,7 +155,7 @@ toml = ["tomli"]
 name = "cytoolz"
 version = "0.12.1"
 description = "Cython implementation of Toolz: High performance functional utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -177,7 +177,7 @@ python-versions = "*"
 name = "eth-abi"
 version = "2.2.0"
 description = "eth_abi: Python utilities for working with Ethereum ABI definitions, especially encoding and decoding"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6, <4"
 
@@ -197,7 +197,7 @@ tools = ["hypothesis (>=4.18.2,<5.0.0)"]
 name = "eth-account"
 version = "0.5.9"
 description = "eth-account: Sign Ethereum transactions and messages with local private keys"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6, <4"
 
@@ -221,7 +221,7 @@ test = ["hypothesis (>=4.18.0,<5)", "pytest (>=6.2.5,<7)", "pytest-xdist", "tox 
 name = "eth-hash"
 version = "0.3.3"
 description = "eth-hash: The Ethereum hashing function, keccak256, sometimes (erroneously) called sha3"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5, <4"
 
@@ -240,7 +240,7 @@ test = ["pytest (==5.4.1)", "pytest-xdist", "tox (==3.14.6)"]
 name = "eth-keyfile"
 version = "0.5.1"
 description = "A library for handling the encrypted keyfiles used to store ethereum private keys."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -254,7 +254,7 @@ pycryptodome = ">=3.4.7,<4.0.0"
 name = "eth-keys"
 version = "0.3.4"
 description = "Common API for Ethereum key operations."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -273,7 +273,7 @@ test = ["asn1tools (>=0.146.2,<0.147)", "factory-boy (>=3.0.1,<3.1)", "pyasn1 (>
 name = "eth-rlp"
 version = "0.2.1"
 description = "eth-rlp: RLP definitions for common Ethereum objects in Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6, <4"
 
@@ -292,7 +292,7 @@ test = ["eth-hash", "pytest-xdist", "pytest (==5.4.1)", "tox (==3.14.6)"]
 name = "eth-typing"
 version = "2.3.0"
 description = "eth-typing: Common type annotations for ethereum python packages"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5, <4"
 
@@ -306,7 +306,7 @@ test = ["pytest (>=4.4,<4.5)", "pytest-xdist", "tox (>=2.9.1,<3)"]
 name = "eth-utils"
 version = "1.10.0"
 description = "eth-utils: Common utility functions for python code that interacts with Ethereum"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5,!=3.5.2,<4"
 
@@ -335,7 +335,7 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "filelock"
-version = "3.10.5"
+version = "3.10.7"
 description = "A platform independent file lock."
 category = "dev"
 optional = false
@@ -362,7 +362,7 @@ pyflakes = ">=2.4.0,<2.5.0"
 name = "frozenlist"
 version = "1.3.3"
 description = "A list-like structure which implements collections.abc.MutableSequence"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -370,7 +370,7 @@ python-versions = ">=3.7"
 name = "hexbytes"
 version = "0.3.0"
 description = "hexbytes: Python `bytes` subclass that decodes hex, with a readable console output"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7, <4"
 
@@ -395,7 +395,7 @@ license = ["ukkonen"]
 name = "idna"
 version = "3.4"
 description = "Internationalized Domain Names in Applications (IDNA)"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -427,7 +427,7 @@ python-versions = ">=3.7"
 name = "ipfshttpclient"
 version = "0.8.0a2"
 description = "Python IPFS HTTP CLIENT library"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6.2,!=3.7.0,!=3.7.1"
 
@@ -439,7 +439,7 @@ requests = ">=2.11"
 name = "jsonschema"
 version = "4.17.3"
 description = "An implementation of JSON Schema validation for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -455,7 +455,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 name = "lru-dict"
 version = "1.1.8"
 description = "An Dict like LRU container."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -527,7 +527,7 @@ python-versions = "*"
 name = "multiaddr"
 version = "0.0.9"
 description = "Python implementation of jbenet's multiaddr"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*"
 
@@ -541,7 +541,7 @@ varint = "*"
 name = "multidict"
 version = "6.0.4"
 description = "multidict implementation"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -557,7 +557,7 @@ python-versions = ">=3.5"
 name = "netaddr"
 version = "0.8.0"
 description = "A network address manipulation library for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -581,7 +581,7 @@ python-versions = ">=3.7"
 name = "parsimonious"
 version = "0.8.1"
 description = "(Soon to be) the fastest pure-Python PEG parser I could muster"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -651,7 +651,7 @@ virtualenv = ">=20.10.0"
 name = "protobuf"
 version = "3.19.5"
 description = "Protocol Buffers"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -675,7 +675,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 name = "pycryptodome"
 version = "3.17"
 description = "Cryptographic library for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -691,7 +691,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 name = "pyrsistent"
 version = "0.19.3"
 description = "Persistent/Functional/Immutable data structures"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -749,9 +749,9 @@ testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtuale
 
 [[package]]
 name = "pywin32"
-version = "305"
+version = "306"
 description = "Python for Window Extensions"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -767,7 +767,7 @@ python-versions = ">=3.6"
 name = "requests"
 version = "2.28.2"
 description = "Python HTTP for Humans."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7, <4"
 
@@ -785,7 +785,7 @@ use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
 name = "rlp"
 version = "2.0.1"
 description = "A package for Recursive Length Prefix encoding and decoding"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -803,7 +803,7 @@ test = ["hypothesis (==5.19.0)", "pytest (==5.4.3)", "tox (>=2.9.1,<3)"]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -819,7 +819,7 @@ python-versions = ">=3.7"
 name = "toolz"
 version = "0.12.0"
 description = "List processing tools and functional utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -835,7 +835,7 @@ python-versions = ">=3.7"
 name = "urllib3"
 version = "1.26.15"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
@@ -848,7 +848,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 name = "varint"
 version = "1.0.2"
 description = "Simple python varint implementation"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -873,7 +873,7 @@ test = ["covdefaults (>=2.2.2)", "coverage-enable-subprocess (>=1)", "coverage (
 name = "web3"
 version = "5.31.4"
 description = "Web3.py"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6,<4"
 
@@ -904,7 +904,7 @@ tester = ["eth-tester[py-evm] (==v0.6.0-b.7)", "py-geth (>=3.9.1,<4)"]
 name = "websockets"
 version = "9.1"
 description = "An implementation of the WebSocket Protocol (RFC 6455 & 7692)"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6.1"
 
@@ -912,7 +912,7 @@ python-versions = ">=3.6.1"
 name = "yarl"
 version = "1.8.2"
 description = "Yet another URL library"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -935,7 +935,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "flake8 (<5)", "pytest-co
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "94331820579075ed5974c95925eb10560fbd19ca5b40d59c38c4ebcf0a8d89e7"
+content-hash = "f9c818c0eb785987d3b8210c06c87a8854dd3a7af9e1a4c1e471af09770e6c4e"
 
 [metadata.files]
 aiohttp = []
