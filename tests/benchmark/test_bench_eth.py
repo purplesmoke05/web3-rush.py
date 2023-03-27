@@ -65,6 +65,7 @@ class TestEthSendTransaction:
                 "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
                 "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
                 "value": 3,
+                # "chain_id": 31337
             }
         )
 
@@ -74,6 +75,7 @@ class TestEthSendTransaction:
                 "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
                 "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
                 "value": 3,
+                "chain_id": 31337,
             }
         )
 
@@ -222,6 +224,7 @@ class TestEthEstimateGas:
                 "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
                 "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
                 "value": 3,
+                # "chain_id": 31337
             }
         )
 
@@ -231,6 +234,7 @@ class TestEthEstimateGas:
                 "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
                 "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
                 "value": 3,
+                "chain_id": 31337,
             }
         )
 

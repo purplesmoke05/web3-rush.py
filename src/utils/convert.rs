@@ -1,9 +1,8 @@
 use bigdecimal::{BigDecimal, ToPrimitive};
 use once_cell::sync::Lazy;
-use std::{f64::MIN, str::FromStr, string::FromUtf8Error};
+use std::{str::FromStr, string::FromUtf8Error};
 
 use hex::ToHex;
-use num_bigfloat::BigFloat;
 use num_bigint::BigInt;
 use pyo3::{exceptions::PyTypeError, PyErr};
 
@@ -154,7 +153,6 @@ pub fn units(unit: &str) -> Result<BigInt, PyErr> {
         "microether" => Ok(SZABO.clone()),
         "finney" => Ok(FINNEY.clone()),
         "milliether" => Ok(FINNEY.clone()),
-        "finney" => Ok(FINNEY.clone()),
         "milli" => Ok(FINNEY.clone()),
         "ether" => Ok(ETHER.clone()),
         "kether" => Ok(K_ETHER.clone()),

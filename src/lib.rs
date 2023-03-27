@@ -12,7 +12,10 @@ use ethers::providers::Middleware;
 use ethers::signers::Wallet;
 use ethers::types::Address as AddressOriginal;
 use ethers::types::U256 as U256Original;
+use ethers::utils::to_checksum;
+use exceptions::wrap_from_hex_error;
 use exceptions::wrap_from_wallet_error;
+use exceptions::wrap_hex_error;
 use exceptions::wrap_parse_error;
 use exceptions::wrap_provider_error;
 use exceptions::wrap_web3_error;
@@ -546,15 +549,36 @@ impl NetHttp {
     }
 }
 
-#[derive(From, Into, Clone)]
 #[pyclass(module = "web3_rush")]
-pub struct Web3ApiHttp(Arc<ethers::providers::Provider<ethers::providers::Http>>);
+pub struct Web3 {
+    client: Arc<ethers::providers::Provider<ethers::providers::Http>>,
+}
 
 #[pymethods]
-impl Web3ApiHttp {
+impl Web3 {
+    #[new]
+    pub fn new(url: String) -> PyResult<Self> {
+        let client = ethers::providers::Provider::<ethers::providers::Http>::try_from(url);
+        match client {
+            Ok(client) => Ok(Web3 {
+                client: Arc::new(client),
+            }),
+            Err(err) => Err(wrap_parse_error(err)),
+        }
+    }
+
+    #[getter]
+    pub fn eth(&self) -> PyResult<EthHttp> {
+        Ok(EthHttp(self.client.clone()))
+    }
+    #[getter]
+    pub fn net(&self) -> PyResult<NetHttp> {
+        Ok(NetHttp(self.client.clone()))
+    }
+
     #[getter]
     pub fn client_version(&self) -> PyResult<String> {
-        match block_on(self.0.client_version()) {
+        match block_on(self.client.client_version()) {
             Ok(result) => Ok(result),
             Err(err) => Err(wrap_provider_error(err)),
         }
@@ -572,7 +596,7 @@ impl Web3ApiHttp {
         hexstr: Option<HexStr>,
         text: Option<String>,
     ) -> PyResult<String> {
-        Web3ApiHttp::to_hex(primitive, hexstr, text)
+        Web3::to_hex(primitive, hexstr, text)
     }
 
     #[staticmethod]
@@ -650,37 +674,29 @@ impl Web3ApiHttp {
     pub fn fromWei(number: Number, unit: String) -> PyResult<f64> {
         from_wei(number, unit)
     }
-}
 
-#[pyclass(module = "web3_rush")]
-pub struct Web3 {
-    client: Arc<ethers::providers::Provider<ethers::providers::Http>>,
-}
-
-#[pymethods]
-impl Web3 {
-    #[new]
-    pub fn new(url: String) -> PyResult<Self> {
-        let client = ethers::providers::Provider::<ethers::providers::Http>::try_from(url);
-        match client {
-            Ok(client) => Ok(Web3 {
-                client: Arc::new(client),
-            }),
-            Err(err) => Err(wrap_parse_error(err)),
+    #[staticmethod]
+    pub fn is_address(address: String) -> PyResult<bool> {
+        match ethers::types::Address::from_str(&address) {
+            Ok(_) => Ok(true),
+            Err(_) => Ok(false),
         }
     }
 
-    #[getter]
-    pub fn web3(&self) -> PyResult<Web3ApiHttp> {
-        Ok(Web3ApiHttp(self.client.clone()))
+    #[staticmethod]
+    pub fn is_checksum_address(address: String) -> PyResult<bool> {
+        match ethers::types::Address::from_str(&address) {
+            Ok(addr) => Ok(to_checksum(&addr, None) == address),
+            Err(_) => Ok(false),
+        }
     }
-    #[getter]
-    pub fn eth(&self) -> PyResult<EthHttp> {
-        Ok(EthHttp(self.client.clone()))
-    }
-    #[getter]
-    pub fn net(&self) -> PyResult<NetHttp> {
-        Ok(NetHttp(self.client.clone()))
+
+    #[staticmethod]
+    pub fn to_checksum_address(address: String) -> PyResult<String> {
+        match ethers::types::Address::from_str(&address) {
+            Ok(addr) => Ok(to_checksum(&addr, None)),
+            Err(err) => Err(wrap_from_hex_error(err)),
+        }
     }
 }
 
