@@ -40,9 +40,9 @@ account = web3.eth.accounts[0]
 transaction = {
     "from": account,
     "to": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-    "value": web3.web3.toWei(1, "ether"),
+    "value": web3.toWei(1, "ether"),
     "gas": 21000,
-    "gasPrice": web3.web3.toWei("50", "gwei"),
+    "gasPrice": web3.toWei("50", "gwei"),
     "nonce": web3.eth.get_transaction_count(account),
 }
 
