@@ -1,10 +1,14 @@
 use std::io::Error;
 
-use ethers::providers::ProviderError;
 use ethers::signers::WalletError;
+use ethers::{providers::ProviderError, types::SignatureError};
 use pyo3::{create_exception, exceptions::PyException, prelude::*};
 
 create_exception!(exceptions, BaseWeb3RushError, PyException);
+
+pub fn wrap_from_signature_error(error: SignatureError) -> pyo3::PyErr {
+    return BaseWeb3RushError::new_err(format!("From signature error: {:?}", error));
+}
 
 pub fn wrap_from_wallet_error(error: WalletError) -> pyo3::PyErr {
     return BaseWeb3RushError::new_err(format!("From wallet error: {:?}", error));

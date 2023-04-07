@@ -5,62 +5,211 @@ use std::sync::Arc;
 use std::thread;
 use std::time;
 
+use account::EthKeystore;
+use account::LocalAccount;
+use account::SignedTransaction;
 use async_std::task::block_on;
 use derive_more::From;
 use derive_more::Into;
+use eth_keystore::EthKeystore as EthKeystoreOriginal;
+use ethers::prelude::rand::thread_rng;
 use ethers::providers::Middleware;
-use ethers::signers::Wallet;
+use ethers::signers::LocalWallet;
+use ethers::signers::Signer;
 use ethers::types::Address as AddressOriginal;
+use ethers::types::Bytes as BytesOriginal;
+use ethers::types::Signature;
 use ethers::types::U256 as U256Original;
+use ethers::utils::rlp;
+use ethers::utils::rlp::Decodable;
 use ethers::utils::to_checksum;
+use ethers_core::types::transaction::eip2718::TypedTransaction as TypedTransactionOriginal;
+use ethers_core::types::Transaction as TransactionOriginal;
 use exceptions::wrap_from_hex_error;
+use exceptions::wrap_from_signature_error;
 use exceptions::wrap_from_wallet_error;
-use exceptions::wrap_hex_error;
+
 use exceptions::wrap_parse_error;
 use exceptions::wrap_provider_error;
-use exceptions::wrap_web3_error;
-use num_bigint::BigInt;
+
 use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+
 use pythonize::depythonize;
-use types::Address;
-use types::AnyStr;
-use types::Block;
-use types::BlockId;
-use types::BlockNumberParser;
-use types::Bytes;
-use types::Eip1559TransactionRequest;
-use types::Eip2930TransactionRequest;
-use types::FeeHistory;
-use types::Filter;
-use types::Log;
-use types::NameOrAddress;
-use types::NodeInfo;
-use types::PeerInfo;
-use types::SyncingStatus;
-use types::Transaction;
-use types::TransactionReceipt;
-use types::TxpoolContent;
-use types::TxpoolInspect;
-use types::TxpoolStatus;
-use types::H256;
-use utils::add_0x_prefix;
+use types::address::Address;
+use types::address::NameOrAddress;
+use types::block::Block;
+use types::fee::FeeHistory;
+use types::log::Filter;
+use types::log::Log;
+use types::node::NodeInfo;
+use types::node::PeerInfo;
+use types::primitives::BlockId;
+use types::primitives::BlockNumberParser;
+use types::str::AnyStr;
+use types::str::Bytes;
+use types::str::HexStr;
+use types::str::H256;
+use types::syncing::SyncingStatus;
+use types::transaction::Eip1559TransactionRequest;
+use types::transaction::Eip2930TransactionRequest;
+use types::transaction::GotTransaction;
+use types::transaction::Transaction;
+use types::transaction::TransactionReceipt;
+use types::transaction::TransactionRequest;
+use types::transaction::TypedTransaction;
+use types::txpool::TxpoolContent;
+use types::txpool::TxpoolInspect;
+use types::txpool::TxpoolStatus;
+
+use utils::decrypt_key;
 use utils::encode_hex;
-use utils::from_wei;
-use utils::to_hex_i32;
-use utils::{to_int, to_wei};
+use utils::encrypt_key;
+
+pub mod account;
 pub mod exceptions;
 pub mod types;
 use num_bigint::BigUint;
 use ruint::aliases::U256;
-use types::{HexStr, Number, Primitives, TransactionRequest, TypedTransaction};
 
 #[derive(From, Into)]
 #[pyclass(module = "web3_rush")]
 pub struct EthHttp(Arc<ethers::providers::Provider<ethers::providers::Http>>);
 
+#[derive(From, Into)]
+#[pyclass(module = "web3_rush.web3")]
+pub struct Account {}
+
+#[pymethods]
+impl Account {
+    #[new]
+    pub fn new() -> Self {
+        Account {}
+    }
+
+    #[staticmethod]
+    pub fn create() -> PyResult<LocalAccount> {
+        let wallet = LocalWallet::new(&mut thread_rng());
+        Ok(LocalAccount(wallet))
+    }
+
+    #[staticmethod]
+    pub fn from_key(private_key: &str) -> PyResult<LocalAccount> {
+        match private_key.parse::<LocalWallet>() {
+            Ok(wallet) => Ok(LocalAccount(wallet)),
+            Err(err) => Err(wrap_from_wallet_error(err)),
+        }
+    }
+
+    #[staticmethod]
+    pub fn sign_message(message: &str, private_key: &str) -> PyResult<String> {
+        let message = message.as_bytes();
+
+        match block_on(
+            Account::from_key(private_key)
+                .expect("Invalid private key")
+                .0
+                .sign_message(message),
+        ) {
+            Ok(signature) => Ok(encode_hex(AnyStr::Str(signature.to_string()))?.into()),
+            Err(err) => Err(wrap_from_wallet_error(err)),
+        }
+    }
+
+    #[staticmethod]
+    pub fn recover_transaction(tx: HexStr) -> PyResult<String> {
+        let typed_tx_hex = hex::decode(tx.0.trim_start_matches("0x")).unwrap();
+        let tx_rlp = rlp::Rlp::new(typed_tx_hex.as_slice());
+        let actual_tx = TransactionOriginal::decode(&tx_rlp).unwrap();
+        let signature = Signature {
+            r: actual_tx.r,
+            s: actual_tx.s,
+            v: actual_tx.v.as_u64(),
+        };
+        let typed_tx: TypedTransactionOriginal = (&actual_tx).into();
+        match signature.recover(typed_tx.sighash()) {
+            Ok(result) => Ok(result.to_string()),
+            Err(err) => Err(wrap_from_signature_error(err)),
+        }
+    }
+
+    #[staticmethod]
+    pub fn sign_transaction(tx: PyObject, private_key: &str) -> PyResult<SignedTransaction> {
+        let tx = Python::with_gil(
+            |py| match depythonize::<TransactionRequest>(tx.as_ref(py)) {
+                Ok(res) => Ok(TypedTransaction::Legacy(res)),
+                Err(_) => match depythonize::<Eip1559TransactionRequest>(tx.as_ref(py)) {
+                    Ok(res) => Ok(TypedTransaction::Eip1559(res)),
+                    Err(_) => match depythonize::<Eip2930TransactionRequest>(tx.as_ref(py)) {
+                        Ok(res) => Ok(TypedTransaction::Eip2930(res)),
+                        Err(err) => {
+                            return Err(err);
+                        }
+                    },
+                },
+            },
+        )?;
+        let org_tx: TypedTransactionOriginal = tx.into();
+
+        match Account::from_key(private_key)
+            .expect("Invalid private key")
+            .0
+            .sign_transaction_sync(&org_tx)
+        {
+            Ok(signature) => Ok(SignedTransaction {
+                raw_transaction: BytesOriginal::from_iter(org_tx.data().unwrap()).into(),
+                hash: BytesOriginal::from_iter(org_tx.hash(&signature).0).into(),
+                r: signature.r.into(),
+                s: signature.s.into(),
+                v: signature.v,
+            }),
+            Err(err) => Err(wrap_from_wallet_error(err)),
+        }
+    }
+
+    #[staticmethod]
+    pub fn decrypt(keyfile_json: PyObject, password: &str) -> PyResult<String> {
+        let keyfile_json =
+            Python::with_gil(
+                |py| match depythonize::<EthKeystore>(keyfile_json.as_ref(py)) {
+                    Ok(res) => Ok(res),
+                    Err(err) => return Err(err),
+                },
+            )?;
+
+        let keystore: EthKeystoreOriginal = keyfile_json.into();
+        match decrypt_key(keystore, password) {
+            Ok(res) => Ok(String::from_utf8(res).unwrap()),
+            Err(err) => Err(PyValueError::new_err(err.to_string())),
+        }
+    }
+
+    #[staticmethod]
+    pub fn encrypt(private_key: &str, password: &str) -> PyResult<Py<PyAny>> {
+        match encrypt_key(&mut rand::thread_rng(), private_key, password) {
+            Ok(res) => {
+                let res = Python::with_gil(|py| match pythonize::pythonize(py, &res) {
+                    Ok(res) => Ok(res),
+                    Err(err) => Err(err),
+                });
+                match res {
+                    Ok(res) => Ok(res),
+                    Err(err) => Err(PyValueError::new_err(err.to_string())),
+                }
+            }
+            Err(err) => Err(PyValueError::new_err(err.to_string())),
+        }
+    }
+}
+
 #[pymethods]
 impl EthHttp {
+    #[getter]
+    pub fn account(&self) -> Account {
+        Account {}
+    }
+
     #[getter]
     pub fn accounts(&self) -> PyResult<Vec<Address>> {
         match block_on(self.0.get_accounts()) {
@@ -188,10 +337,13 @@ impl EthHttp {
         }
     }
 
-    pub fn get_transaction(&self, tx_hash: H256) -> PyResult<Option<Transaction>> {
+    pub fn get_transaction(&self, tx_hash: H256) -> PyResult<Option<GotTransaction>> {
         match block_on(self.0.get_transaction::<H256>(tx_hash.into())) {
             Ok(result) => match result {
-                Some(result) => Ok(Some(result.into())),
+                Some(result) => {
+                    let tx: Transaction = result.into();
+                    return Ok(Some(tx.into()));
+                }
                 None => Ok(None),
             },
             Err(err) => Err(wrap_provider_error(err)),
@@ -224,7 +376,7 @@ impl EthHttp {
             },
         )?;
         match block_on(self.0.send_transaction::<TypedTransaction>(tx, None)) {
-            Ok(result) => Ok(types::H256(result.tx_hash())),
+            Ok(result) => Ok(H256(result.tx_hash())),
             Err(err) => Err(wrap_provider_error(err)),
         }
     }
@@ -234,7 +386,7 @@ impl EthHttp {
             self.0
                 .send_raw_transaction(Bytes::from(tx.to_string()).into()),
         ) {
-            Ok(result) => Ok(types::H256(result.tx_hash())),
+            Ok(result) => Ok(H256(result.tx_hash())),
             Err(err) => Err(wrap_provider_error(err)),
         }
     }
@@ -622,6 +774,7 @@ impl Web3 {
 fn web3_rush(_py: Python, m: &PyModule) -> PyResult<()> {
     let module = PyModule::new(_py, "module")?;
     module.add_class::<Web3>()?;
+    module.add_class::<Account>()?;
     m.add_submodule(module)?;
     exceptions::init_module(_py, m, m)?;
     Ok(())

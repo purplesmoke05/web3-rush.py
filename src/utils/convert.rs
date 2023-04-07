@@ -1,6 +1,18 @@
+use aes::{
+    cipher::{self, InnerIvInit, KeyInit, StreamCipherCore},
+    Aes128,
+};
 use bigdecimal::{BigDecimal, ToPrimitive};
+use eth_keystore::{CipherparamsJson, CryptoJson, KdfType, KdfparamsType, KeystoreError};
+use ethers_core::rand::{CryptoRng, Rng};
+use hmac::digest::Update;
+use hmac::Hmac;
 use once_cell::sync::Lazy;
+use sha2::Digest;
+use sha2::Sha256;
+use sha3::Keccak256;
 use std::{str::FromStr, string::FromUtf8Error};
+use uuid::Uuid;
 
 use hex::ToHex;
 use num_bigint::BigInt;
@@ -8,7 +20,8 @@ use pyo3::{exceptions::PyTypeError, PyErr};
 
 use crate::{
     exceptions::BaseWeb3RushError,
-    types::{AnyStr, HexStr, Number, Primitives},
+    types::primitives::{Number, Primitives},
+    types::str::{AnyStr, HexStr},
 };
 
 pub fn add_0x_prefix(value: HexStr) -> HexStr {
@@ -290,4 +303,147 @@ pub fn from_wei(number: Number, unit: String) -> Result<f64, PyErr> {
             },
         },
     }
+}
+
+use eth_keystore::EthKeystore as EthKeystoreOriginal;
+
+pub fn decrypt_key<S>(keystore: EthKeystoreOriginal, password: S) -> Result<Vec<u8>, KeystoreError>
+where
+    S: AsRef<[u8]>,
+{
+    // Derive the key.
+    let key = match keystore.crypto.kdfparams {
+        KdfparamsType::Pbkdf2 {
+            c,
+            dklen,
+            prf: _,
+            salt,
+        } => {
+            let mut key = vec![0u8; dklen as usize];
+            let _ = pbkdf2::pbkdf2::<Hmac<Sha256>>(password.as_ref(), &salt, c, key.as_mut_slice());
+            key
+        }
+        KdfparamsType::Scrypt {
+            dklen,
+            n,
+            p,
+            r,
+            salt,
+        } => {
+            let mut key = vec![0u8; dklen as usize];
+            let log_n = (n as f32).log2() as u8;
+            let scrypt_params = scrypt::Params::new(log_n, r, p, 32).unwrap();
+            let _ = scrypt::scrypt(password.as_ref(), &salt, &scrypt_params, key.as_mut_slice());
+            key
+        }
+    };
+
+    // Derive the MAC from the derived key and ciphertext.
+    let derived_mac = Keccak256::new()
+        .chain(&key[16..32])
+        .chain(&keystore.crypto.ciphertext)
+        .finalize();
+
+    if derived_mac.as_slice() != keystore.crypto.mac.as_slice() {
+        return Err(KeystoreError::MacMismatch);
+    }
+
+    // Decrypt the private key bytes using AES-128-CTR
+    let decryptor =
+        Aes128Ctr::new(&key[..16], &keystore.crypto.cipherparams.iv[..16]).expect("invalid length");
+
+    let mut pk = keystore.crypto.ciphertext;
+    decryptor.apply_keystream(&mut pk);
+
+    Ok(pk)
+}
+
+struct Aes128Ctr {
+    inner: ctr::CtrCore<Aes128, ctr::flavors::Ctr128BE>,
+}
+
+impl Aes128Ctr {
+    fn new(key: &[u8], iv: &[u8]) -> Result<Self, cipher::InvalidLength> {
+        let cipher = aes::Aes128::new_from_slice(key).unwrap();
+        let inner = ctr::CtrCore::inner_iv_slice_init(cipher, iv).unwrap();
+        Ok(Self { inner })
+    }
+
+    fn apply_keystream(self, buf: &mut [u8]) {
+        self.inner.apply_keystream_partial(buf.into());
+    }
+}
+const DEFAULT_CIPHER: &str = "aes-128-ctr";
+const DEFAULT_KEY_SIZE: usize = 32usize;
+const DEFAULT_IV_SIZE: usize = 16usize;
+const DEFAULT_KDF_PARAMS_DKLEN: u8 = 32u8;
+const DEFAULT_KDF_PARAMS_LOG_N: u8 = 13u8;
+const DEFAULT_KDF_PARAMS_R: u32 = 8u32;
+const DEFAULT_KDF_PARAMS_P: u32 = 1u32;
+pub fn encrypt_key<R, B, S>(
+    rng: &mut R,
+    pk: B,
+    password: S,
+) -> Result<EthKeystoreOriginal, KeystoreError>
+where
+    R: Rng + CryptoRng,
+    B: AsRef<[u8]>,
+    S: AsRef<[u8]>,
+{
+    // Generate a random salt.
+    let mut salt = vec![0u8; DEFAULT_KEY_SIZE];
+    rng.fill_bytes(salt.as_mut_slice());
+
+    // Derive the key.
+    let mut key = vec![0u8; DEFAULT_KDF_PARAMS_DKLEN as usize];
+    let scrypt_params = scrypt::Params::new(
+        DEFAULT_KDF_PARAMS_LOG_N,
+        DEFAULT_KDF_PARAMS_R,
+        DEFAULT_KDF_PARAMS_P,
+        32,
+    )
+    .unwrap();
+    scrypt::scrypt(password.as_ref(), &salt, &scrypt_params, key.as_mut_slice())
+        .expect("scrypt failed");
+
+    // Encrypt the private key using AES-128-CTR.
+    let mut iv = vec![0u8; DEFAULT_IV_SIZE];
+    rng.fill_bytes(iv.as_mut_slice());
+
+    let encryptor = Aes128Ctr::new(&key[..16], &iv[..16]).expect("invalid length");
+
+    let mut ciphertext = pk.as_ref().to_vec();
+    encryptor.apply_keystream(&mut ciphertext);
+
+    // Calculate the MAC.
+    let mac = Keccak256::new()
+        .chain(&key[16..32])
+        .chain(&ciphertext)
+        .finalize();
+
+    // If a file name is not specified for the keystore, simply use the strigified uuid.
+    let id = Uuid::new_v4();
+    let _name = id.to_string();
+
+    // Construct and serialize the encrypted JSON keystore.
+    let keystore = EthKeystoreOriginal {
+        id,
+        version: 3,
+        crypto: CryptoJson {
+            cipher: String::from(DEFAULT_CIPHER),
+            cipherparams: CipherparamsJson { iv },
+            ciphertext: ciphertext.to_vec(),
+            kdf: KdfType::Scrypt,
+            kdfparams: KdfparamsType::Scrypt {
+                dklen: DEFAULT_KDF_PARAMS_DKLEN,
+                n: 2u32.pow(DEFAULT_KDF_PARAMS_LOG_N as u32),
+                p: DEFAULT_KDF_PARAMS_P,
+                r: DEFAULT_KDF_PARAMS_R,
+                salt,
+            },
+            mac: mac.to_vec(),
+        },
+    };
+
+    Ok(keystore.into())
 }

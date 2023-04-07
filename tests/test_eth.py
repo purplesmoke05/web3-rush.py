@@ -50,7 +50,7 @@ class TestEthModule:
         )
         assert type(tx) == str
 
-    def test_get_transaction(self, web3: Web3):
+    def test_get_transaction(self, web3: Web3, web3_original: Web3Original):
         tx = web3.eth.send_transaction(
             {
                 "from": web3.eth.accounts[0],
@@ -62,24 +62,59 @@ class TestEthModule:
 
         time.sleep(1)
 
-        result = web3.eth.get_transaction(tx)
-        assert result.chain_id == 31337
-        assert type(result.block_hash) == str
-        assert type(result.block_number) == int
-        assert result.from_ == web3.eth.accounts[0]
-        assert result.to == None
-        assert type(result.gas) == int
-        assert result.hash == tx
-        assert type(result.max_fee_per_gas) == int
-        assert type(result.max_priority_fee_per_gas) == int
-        assert type(result.nonce) == int
-        assert type(result.r) == int
-        assert type(result.s) == int
-        assert type(result.v) == int
-        assert type(result.value) == int
-        assert type(result.transaction_index) == int
+        result1 = web3.eth.get_transaction(tx)
+        result2 = web3_original.eth.get_transaction(tx)
 
-    def test_wait_for_transaction(self, web3: Web3):
+        assert result1.chain_id == 31337
+        assert result1.hash == result2["hash"].hex()
+        assert result1.block_hash == result2["blockHash"].hex()
+        assert result1.block_number == result2["blockNumber"]
+        assert result1.from_ == web3.eth.accounts[0]
+        assert result1.to == result2["to"]
+        assert result1.gas == result2.gas
+        assert result1.max_fee_per_gas == result2["maxFeePerGas"]
+        assert result1.max_priority_fee_per_gas == result2["maxPriorityFeePerGas"]
+        assert result1.nonce == result2.nonce
+        assert result1.r == result2["r"].hex()
+        assert result1.s == result2["s"].hex()
+        assert result1.v == result2.v
+        assert result1.value == result2.value
+        assert result1.transaction_index == result2["transactionIndex"]
+
+    def test_wait_for_transaction(self, web3: Web3, web3_original: Web3Original):
+        tx = web3.eth.send_transaction(
+            {
+                "from": web3.eth.accounts[0],
+                "to": "0xd3CdA913deB6f67967B99D67aCDFa1712C293601",
+                "value": 1,
+                # "nonce": 2,
+                "gas": 30000,
+                "gas_price": 4000000000,
+                "data": "",
+            }
+        )
+        assert type(tx) == str
+
+        receipt1 = web3.eth.wait_for_transaction_receipt(tx, 5, 0.1)
+        receipt2 = web3_original.eth.wait_for_transaction_receipt(tx, 5, 0.1)
+
+        assert receipt1.block_hash == receipt2["blockHash"].hex()
+        assert receipt1.block_number == receipt2["blockNumber"]
+        assert receipt1.from_ == web3.eth.accounts[0]
+        assert receipt1.to == receipt2["to"]
+        assert receipt1.contract_address == receipt2["contractAddress"]
+        assert receipt1.cumulative_gas_used == receipt2["cumulativeGasUsed"]
+        assert receipt1.effective_gas_price == receipt2["effectiveGasPrice"]
+        assert receipt1.gas_used == receipt2["gasUsed"]
+        assert receipt1.root == None
+        assert receipt1.status == receipt2["status"]
+        assert receipt1.transaction_hash == receipt2["transactionHash"].hex()
+        assert receipt1.transaction_index == receipt2["transactionIndex"]
+
+        assert len(receipt1.logs) == len(receipt2["logs"])
+        assert receipt1.logs_bloom == receipt2["logsBloom"].hex()
+
+    def test_get_transaction_count(self, web3: Web3, web3_original: Web3Original):
         tx = web3.eth.send_transaction(
             {
                 "from": web3.eth.accounts[0],
@@ -89,48 +124,29 @@ class TestEthModule:
         )
         assert type(tx) == str
 
-        receipt = web3.eth.wait_for_transaction_receipt(tx, 5, 0.1)
-        assert type(receipt.block_hash) == str
-        assert type(receipt.block_number) == int
-        assert receipt.from_ == web3.eth.accounts[0]
-        assert receipt.to == None
-        assert type(receipt.contract_address) == str
-        assert type(receipt.cumulative_gas_used) == int
-        assert type(receipt.effective_gas_price) == int
-        assert type(receipt.gas_used) == int
-        assert receipt.root == None
-        assert receipt.status == 1
-        assert receipt.transaction_hash == tx
-        assert type(receipt.transaction_index) == int
-        assert receipt.status == 1
+        result1 = web3.eth.get_transaction_count(web3.eth.accounts[0])
+        result2 = web3_original.eth.get_transaction_count(web3.eth.accounts[0])
+        assert result1 == result2
 
-        assert len(receipt.logs) == 0
-        assert type(receipt.logs_bloom) == str
-
-    def test_get_transaction_count(self, web3: Web3):
-        tx = web3.eth.send_transaction(
-            {
-                "from": web3.eth.accounts[0],
-                "to": "0xd3CdA913deB6f67967B99D67aCDFa1712C293601",
-                "value": 3,
-            }
-        )
-        assert type(tx) == str
-
-        result = web3.eth.get_transaction_count(web3.eth.accounts[0])
-        assert type(result) == int
-
-    def test_estimate_gas(self, web3: Web3):
-        result = web3.eth.estimate_gas(
+    def test_estimate_gas(self, web3: Web3, web3_original: Web3Original):
+        result1 = web3.eth.estimate_gas(
             {
                 "from": web3.eth.accounts[0],
                 "to": web3.eth.accounts[1],
                 "value": 3,
             }
         )
-        assert type(result) == int
+        result2 = web3_original.eth.estimate_gas(
+            {
+                "from": web3.eth.accounts[0],
+                "to": web3.eth.accounts[1],
+                "value": 3,
+            }
+        )
 
-    def test_get_raw_transaction(self, web3: Web3):
+        assert result1 == result2
+
+    def test_get_raw_transaction(self, web3: Web3, web3_original: Web3Original):
         tx = web3.eth.send_transaction(
             {
                 "from": web3.eth.accounts[0],
@@ -142,46 +158,108 @@ class TestEthModule:
 
         time.sleep(1)
 
-        result = web3.eth.get_raw_transaction(tx)
-        assert type(result) == str
+        result1 = web3.eth.get_raw_transaction(tx)
+        # result2 = web3_original.eth.get_raw_transaction(tx)
+        # assert result1 == result2
 
-    def test_get_block(self, web3: Web3):
-        result = web3.eth.get_block(0)
+    def test_get_block(self, web3: Web3, web3_original: Web3Original):
+        result1 = web3.eth.get_block(0)
+        result2 = web3_original.eth.get_block(0)
 
-        assert type(result.hash) == str
-        assert type(result.parent_hash) == str
-        assert type(result.uncles_hash) == str
-        assert type(result.author) == str
-        assert type(result.state_root) == str
-        assert type(result.transactions_root) == str
-        assert type(result.receipts_root) == str
-        assert type(result.number) == int
-        assert type(result.gas_used) == int
-        assert type(result.gas_limit) == int
-        assert type(result.extra_data) == str
-        assert type(result.timestamp) == int
-        assert type(result.difficulty) == int
-        assert type(result.total_difficulty) == int
-        assert type(result.seal_fields) == list
-        assert type(result.uncles) == list
-        assert type(result.transactions) == list
-        assert type(result.size) == int
-        assert type(result.mix_hash) == str
-        assert type(result.nonce) == str
-        assert type(result.base_fee_per_gas) == int
-        assert type(result.other) != None
-        assert type(result.logs_bloom) == str
+        assert result1.hash == result2["hash"].hex()
+        assert result1.parent_hash == result2["parentHash"].hex()
+        assert result1.state_root == result2["stateRoot"].hex()
+        assert result1.transactions_root == result2["transactionsRoot"].hex()
+        # assert result1.receipts_root == result2["receiptRoot"].hex()
+        assert result1.number == result2["number"]
+        assert result1.gas_used == result2["gasUsed"]
+        assert result1.gas_limit == result2["gasLimit"]
+        assert result1.extra_data == result2["extraData"].hex()
+        assert result1.timestamp == result2["timestamp"]
+        assert result1.difficulty == result2["difficulty"]
+        assert result1.total_difficulty == result2["totalDifficulty"]
+        assert result1.seal_fields == result2["sealFields"]
+        assert result1.uncles == result2["uncles"]
+        assert result1.transactions == result2["transactions"]
+        assert result1.size == result2["size"]
+        assert result1.mix_hash == result2["mixHash"].hex()
+        assert result1.nonce == result2["nonce"].hex()
+        assert result1.base_fee_per_gas == result2["baseFeePerGas"]
+        assert result1.other != None
+        assert result1.logs_bloom == result2["logsBloom"].hex()
 
-    def test_get_balance(self, web3: Web3):
-        result = web3.eth.get_balance(web3.eth.accounts[0])
+    def test_get_balance(self, web3: Web3, web3_original: Web3Original):
+        result1 = web3.eth.get_balance(web3.eth.accounts[0])
+        result2 = web3_original.eth.get_balance(web3.eth.accounts[0])
 
-        assert type(result) == int
+        assert result1 == result2
 
-    def test_get_code(self, web3: Web3):
-        result = web3.eth.get_code(web3.eth.accounts[0])
+    def test_get_code(self, web3: Web3, web3_original: Web3Original):
+        result1 = web3.eth.get_code(web3.eth.accounts[0])
+        result2 = web3_original.eth.get_code(web3.eth.accounts[0])
 
-        assert result == "0x"
+        assert result1 == result2.hex()
 
     def test_get_logs(self, web3: Web3):
         result = web3.eth.get_logs({"block_from": 0, "block_to": web3.eth.block_number})
         assert type(result) == list
+
+    def test_account_from_key(self, web3: Web3, web3_original: Web3Original):
+        account1 = web3.eth.account.from_key(
+            "0xb25c7db31feed9122727bf0939dc769a96564b2de4c4726d035b36ecf1e5b364"
+        )
+        account2 = web3_original.eth.account.from_key(
+            "0xb25c7db31feed9122727bf0939dc769a96564b2de4c4726d035b36ecf1e5b364"
+        )
+
+        assert account1.address == account2.address
+
+    def test_account_sign_transaction(self, web3: Web3, web3_original: Web3Original):
+        account1 = web3.eth.account.from_key(
+            "0xb25c7db31feed9122727bf0939dc769a96564b2de4c4726d035b36ecf1e5b364"
+        )
+        account2 = web3_original.eth.account.from_key(
+            "0xb25c7db31feed9122727bf0939dc769a96564b2de4c4726d035b36ecf1e5b364"
+        )
+
+        tx1 = account1.sign_transaction(
+            {
+                "from": "0x5ce9454909639D2D17A3F753ce7d93fa0b9aB12E",
+                "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                "value": 1,
+                "nonce": 2,
+                "gas": 21000,
+                "gasPrice": 40000000,
+                "data": "0x",
+                "chainId": 1,
+            }
+        )
+        tx2 = account2.sign_transaction(
+            {
+                "from": "0x5ce9454909639D2D17A3F753ce7d93fa0b9aB12E",
+                "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                "value": 1,
+                "nonce": 2,
+                "gas": 21000,
+                "gasPrice": 40000000,
+                "data": "0x",
+                "chainId": 1,
+            }
+        )
+
+        assert tx1.raw_transaction == tx2.rawTransaction.hex()
+        assert tx1.hash == tx2.hash.hex()
+        assert tx1.r == tx2.r
+        assert tx1.s == tx2.s
+        assert tx1.v == tx2.v
+
+    def test_account_sign_transaction(self, web3: Web3, web3_original: Web3Original):
+        account1 = web3.eth.account.from_key(
+            "0xb25c7db31feed9122727bf0939dc769a96564b2de4c4726d035b36ecf1e5b364"
+        )
+        account2 = web3_original.eth.account.from_key(
+            "0xb25c7db31feed9122727bf0939dc769a96564b2de4c4726d035b36ecf1e5b364"
+        )
+
+        tx1 = account1.sign_message("test_message")
+        # tx2 = account2.sign_message("test_message")
