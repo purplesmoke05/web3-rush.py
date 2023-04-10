@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1680872314626,
+  "lastUpdate": 1681137466851,
   "repoUrl": "https://github.com/purplesmoke05/web3-rush.py",
   "entries": {
     "Benchmark": [
@@ -2180,6 +2180,380 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.0000011428382877913466",
             "extra": "mean: 82.88735399969482 usec\nrounds: 100"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "yosuke.otosu@gmail.com",
+            "name": "purplehaze",
+            "username": "purplesmoke05"
+          },
+          "committer": {
+            "email": "yosuke.otosu@gmail.com",
+            "name": "purplehaze",
+            "username": "purplesmoke05"
+          },
+          "distinct": true,
+          "id": "984beafbef5e5f4fe2d87c5852754e3aa33b7db7",
+          "message": "🧪 add eth account benchmark",
+          "timestamp": "2023-04-10T23:30:33+09:00",
+          "tree_id": "fbae0f735b9fe1116414c72a3a7b3021726dd8ca",
+          "url": "https://github.com/purplesmoke05/web3-rush.py/commit/984beafbef5e5f4fe2d87c5852754e3aa33b7db7"
+        },
+        "date": 1681137465837,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthBlockNumber::test_block_number[rush]",
+            "value": 1537.2615804526215,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0001887206740148002",
+            "extra": "mean: 650.5073779997588 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthBlockNumber::test_block_number[original]",
+            "value": 765.1499637346262,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00004883562382770034",
+            "extra": "mean: 1.3069333429999688 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthChainId::test_chain_id[rush]",
+            "value": 1645.9902962021056,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000025627909009288774",
+            "extra": "mean: 607.5369960001353 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthChainId::test_chain_id[original]",
+            "value": 767.3323571054144,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00007241764998560967",
+            "extra": "mean: 1.3032162540001195 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthSyncing::test_syncing[rush]",
+            "value": 1772.0608542841837,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00007105101979974562",
+            "extra": "mean: 564.3147060002889 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthSyncing::test_syncing[original]",
+            "value": 792.2936681671331,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000021472445317953784",
+            "extra": "mean: 1.2621582630003445 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthAccounts::test_accounts[rush]",
+            "value": 1294.7169032740114,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000016505765565492448",
+            "extra": "mean: 772.3696180000843 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthAccounts::test_accounts[original]",
+            "value": 449.53268856330743,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000055143185150879414",
+            "extra": "mean: 2.2245323320000807 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthSendTransaction::test_send_transaction[rush]",
+            "value": 396.68763948665793,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00007957659688557727",
+            "extra": "mean: 2.5208751179998217 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthSendTransaction::test_send_transaction[original]",
+            "value": 70.11743663609897,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00010303158523347577",
+            "extra": "mean: 14.261787766000054 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthWaitForTransactionReceipt::test_wait_for_transaction_receipt[rush]",
+            "value": 1298.7503526706528,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00006456130407964201",
+            "extra": "mean: 769.9709170000801 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthWaitForTransactionReceipt::test_wait_for_transaction_receipt[original]",
+            "value": 435.74195238694415,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0000755810214410255",
+            "extra": "mean: 2.294936245000315 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthGetTransaction::test_get_transaction[rush]",
+            "value": 613.4929406711562,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000021403726735465448",
+            "extra": "mean: 1.6300106059998143 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthGetTransaction::test_get_transaction[original]",
+            "value": 320.92031494570193,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00003770811464823655",
+            "extra": "mean: 3.1160383229998843 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthGetTransactionCount::test_get_transaction_count[rush]",
+            "value": 1618.8063939224783,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00003375202437675229",
+            "extra": "mean: 617.7390970003103 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthGetTransactionCount::test_get_transaction_count[original]",
+            "value": 473.72647365977036,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00002506565663810755",
+            "extra": "mean: 2.110922769999547 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthGetBlock::test_get_block[rush]",
+            "value": 1176.9565577517938,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00004814494912358064",
+            "extra": "mean: 849.6490320001158 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthGetBlock::test_get_block[original]",
+            "value": 541.1288710593994,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000024666932675356066",
+            "extra": "mean: 1.8479886279995412 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthGetBalance::test_get_balance[rush]",
+            "value": 1600.6420521001626,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00004164667199106637",
+            "extra": "mean: 624.7492990003138 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthGetBalance::test_get_balance[original]",
+            "value": 474.7961024578784,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00004013351265076017",
+            "extra": "mean: 2.1061672469999166 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthGetCode::test_get_code[rush]",
+            "value": 1575.5766038830977,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00003509994991884773",
+            "extra": "mean: 634.6882769999524 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthGetCode::test_get_code[original]",
+            "value": 477.7078861734113,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000022125929529828006",
+            "extra": "mean: 2.093329478000271 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthEstimateGas::test_estimate_gas[rush]",
+            "value": 1462.7969891676585,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00004991524954240068",
+            "extra": "mean: 683.621861000006 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthEstimateGas::test_estimate_gas[original]",
+            "value": 245.35030190153333,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00008584767211891934",
+            "extra": "mean: 4.075805052000021 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthGetLogs::test_get_logs[rush]",
+            "value": 791.1210328308317,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0000322820550794336",
+            "extra": "mean: 1.264029090999827 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthGetLogs::test_get_logs[original]",
+            "value": 12.537218713377495,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00040113372979526553",
+            "extra": "mean: 79.762507368 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthAccountFromKey::test_account_from_key[rush]",
+            "value": 800.7705975614882,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00001792672155654475",
+            "extra": "mean: 1.2487970999999334 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthAccountFromKey::test_account_from_key[original]",
+            "value": 296.42561462754963,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000010444531615696519",
+            "extra": "mean: 3.3735276259997704 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthAccountSignTransaction::test_account_sign_transaction[rush]",
+            "value": 727.9386243498403,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000026295491801214544",
+            "extra": "mean: 1.3737421900000868 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_eth.py::TestEthAccountSignTransaction::test_account_sign_transaction[original]",
+            "value": 94.46716404301141,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00024751051185139075",
+            "extra": "mean: 10.585688796 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_net.py::TestNetVersion::test_version[rush]",
+            "value": 1695.8185449190617,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00001684692240978659",
+            "extra": "mean: 589.6857320001345 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_net.py::TestNetVersion::test_version[original]",
+            "value": 780.9021861661997,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000022456162365372235",
+            "extra": "mean: 1.2805701120001345 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_net.py::TestNetListening::test_listening[rush]",
+            "value": 1695.7972700149612,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000019950155025187776",
+            "extra": "mean: 589.6931299996595 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_net.py::TestNetListening::test_listening[original]",
+            "value": 792.0414038630787,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000029263420763048245",
+            "extra": "mean: 1.2625602589998834 msec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3Api::test_api[rush]",
+            "value": 513558.9843027236,
+            "unit": "iter/sec",
+            "range": "stddev: 3.6228851482897437e-7",
+            "extra": "mean: 1.9471960000032595 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3Api::test_api[original]",
+            "value": 921236.1516063884,
+            "unit": "iter/sec",
+            "range": "stddev: 4.511234250013611e-8",
+            "extra": "mean: 1.085497999895324 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3ToHex::test_to_hex[rush]",
+            "value": 99823.56184903844,
+            "unit": "iter/sec",
+            "range": "stddev: 2.9364899839062116e-7",
+            "extra": "mean: 10.017675000540294 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3ToHex::test_to_hex[original]",
+            "value": 121209.4913282278,
+            "unit": "iter/sec",
+            "range": "stddev: 2.1192635049747684e-7",
+            "extra": "mean: 8.250179000356184 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3ToInt::test_to_int[rush]",
+            "value": 122933.50317688257,
+            "unit": "iter/sec",
+            "range": "stddev: 1.9991473073171333e-7",
+            "extra": "mean: 8.134479000091233 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3ToInt::test_to_int[original]",
+            "value": 149209.56977036188,
+            "unit": "iter/sec",
+            "range": "stddev: 4.264055892918723e-7",
+            "extra": "mean: 6.70198299974345 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3ToWei::test_to_wei[rush]",
+            "value": 68921.48829428271,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000002460367965784402",
+            "extra": "mean: 14.509262999808925 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3ToWei::test_to_wei[original]",
+            "value": 71857.83989906858,
+            "unit": "iter/sec",
+            "range": "stddev: 2.922164300230786e-7",
+            "extra": "mean: 13.916365999932623 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3FromWei::test_from_wei[rush]",
+            "value": 142967.79994349787,
+            "unit": "iter/sec",
+            "range": "stddev: 2.8219079310822607e-7",
+            "extra": "mean: 6.9945819995496095 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3FromWei::test_from_wei[original]",
+            "value": 150484.922615118,
+            "unit": "iter/sec",
+            "range": "stddev: 1.7636523144420048e-7",
+            "extra": "mean: 6.645183999978599 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3IsAddress::test_is_address[rush]",
+            "value": 128457.43177836323,
+            "unit": "iter/sec",
+            "range": "stddev: 5.576131488120337e-7",
+            "extra": "mean: 7.784679999872424 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3IsAddress::test_is_address[original]",
+            "value": 20755.1211186015,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0000016316493740120308",
+            "extra": "mean: 48.180879999961235 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3IsChecksumAddress::test_is_checksum_address[rush]",
+            "value": 29189.057349155915,
+            "unit": "iter/sec",
+            "range": "stddev: 7.914534160234339e-7",
+            "extra": "mean: 34.25941400018928 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3IsChecksumAddress::test_is_checksum_address[original]",
+            "value": 11908.250738669474,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0000015118236673764596",
+            "extra": "mean: 83.97539000020515 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3ToChecksumAddress::test_to_checksum_address[rush]",
+            "value": 28163.927917287987,
+            "unit": "iter/sec",
+            "range": "stddev: 5.978883278101282e-7",
+            "extra": "mean: 35.50641099980112 usec\nrounds: 100"
+          },
+          {
+            "name": "tests/benchmark/test_bench_web3_root.py::TestWeb3ToChecksumAddress::test_to_checksum_address[original]",
+            "value": 12510.602579309254,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000001245889749437272",
+            "extra": "mean: 79.93220099996279 usec\nrounds: 100"
           }
         ]
       }
