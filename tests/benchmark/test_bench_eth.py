@@ -257,3 +257,68 @@ class TestEthGetLogs:
         kwargs = {"web3_original": web3_original} if case == "original" else {"web3": web3}
         target_func = self.org if case == "original" else self.rush
         benchmark.pedantic(target_func, kwargs=kwargs, rounds=100, iterations=10)
+
+
+class TestEthAccountFromKey:
+    def org(self, web3_original):
+        _ = web3_original.eth.account.from_key(
+            "0xb25c7db31feed9122727bf0939dc769a96564b2de4c4726d035b36ecf1e5b364"
+        )
+
+    def rush(self, web3: Web3):
+        _ = web3.eth.account.from_key(
+            "0xb25c7db31feed9122727bf0939dc769a96564b2de4c4726d035b36ecf1e5b364"
+        )
+
+    @pytest.mark.parametrize("case", ["rush", "original"])
+    def test_account_from_key(self, case, benchmark, web3_original, web3):
+        kwargs = {"web3_original": web3_original} if case == "original" else {"web3": web3}
+        target_func = self.org if case == "original" else self.rush
+        benchmark.pedantic(target_func, kwargs=kwargs, rounds=100, iterations=10)
+
+
+class TestEthAccountSignTransaction:
+    def org(self, account, web3_original):
+        account = web3_original.eth.account.from_key(
+            "0xb25c7db31feed9122727bf0939dc769a96564b2de4c4726d035b36ecf1e5b364"
+        )
+        _ = account.sign_transaction(
+            {
+                "from": "0x5ce9454909639D2D17A3F753ce7d93fa0b9aB12E",
+                "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                "value": 1,
+                "nonce": 2,
+                "gas": 21000,
+                "gasPrice": 40000000,
+                "data": "0x",
+                "chainId": 1,
+            }
+        )
+
+    def rush(self, account, web3):
+        _ = account.sign_transaction(
+            {
+                "from": "0x5ce9454909639D2D17A3F753ce7d93fa0b9aB12E",
+                "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+                "value": 1,
+                "nonce": 2,
+                "gas": 21000,
+                "gasPrice": 40000000,
+                "data": "0x",
+                "chainId": 1,
+            }
+        )
+
+    @pytest.mark.parametrize("case", ["rush", "original"])
+    def test_account_sign_transaction(self, case, benchmark, web3_original, web3):
+        kwargs = {"web3_original": web3_original} if case == "original" else {"web3": web3}
+        if case == "original":
+            kwargs["account"] = web3_original.eth.account.from_key(
+                "0xb25c7db31feed9122727bf0939dc769a96564b2de4c4726d035b36ecf1e5b364"
+            )
+        else:
+            kwargs["account"] = web3.eth.account.from_key(
+                "0xb25c7db31feed9122727bf0939dc769a96564b2de4c4726d035b36ecf1e5b364"
+            )
+        target_func = self.org if case == "original" else self.rush
+        benchmark.pedantic(target_func, kwargs=kwargs, rounds=100, iterations=10)

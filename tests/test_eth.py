@@ -253,7 +253,7 @@ class TestEthModule:
         assert tx1.s == tx2.s
         assert tx1.v == tx2.v
 
-    def test_account_sign_transaction(self, web3: Web3, web3_original: Web3Original):
+    def test_account_sign_message(self, web3: Web3, web3_original: Web3Original):
         account1 = web3.eth.account.from_key(
             "0xb25c7db31feed9122727bf0939dc769a96564b2de4c4726d035b36ecf1e5b364"
         )
