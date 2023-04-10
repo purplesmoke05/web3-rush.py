@@ -519,6 +519,64 @@ pub struct GethHttp {
     pub txpool: GethTxPoolHttp,
 }
 
+#[pymethods]
+impl GethHttp {
+    pub fn datadir(&self) -> PyResult<String> {
+        self.admin.datadir()
+    }
+    pub fn add_peer(&self, peer: String) -> PyResult<bool> {
+        self.admin.add_peer(peer)
+    }
+    pub fn peers(&self) -> PyResult<Vec<PeerInfo>> {
+        self.admin.peers()
+    }
+    pub fn node_info(&self) -> PyResult<NodeInfo> {
+        self.admin.node_info()
+    }
+    pub fn start_http(&self) -> PyResult<bool> {
+        self.admin.start_http()
+    }
+    pub fn start_ws(&self) -> PyResult<bool> {
+        self.admin.start_ws()
+    }
+    pub fn stop_http(&self) -> PyResult<bool> {
+        self.admin.start_http()
+    }
+    pub fn stop_ws(&self) -> PyResult<bool> {
+        self.admin.stop_ws()
+    }
+    pub fn make_dag(&self, block_number: U256) -> PyResult<bool> {
+        self.miner.make_dag(block_number)
+    }
+    pub fn set_extra(&self, extra_data: H256) -> PyResult<()> {
+        self.miner.set_extra(extra_data)
+    }
+    pub fn set_gas_price(&self, gas_price: U256) -> PyResult<()> {
+        self.miner.set_gas_price(gas_price)
+    }
+    pub fn start(&self, num_of_threads: usize) -> PyResult<()> {
+        self.miner.start(num_of_threads)
+    }
+    pub fn stop(&self) -> PyResult<()> {
+        self.miner.stop()
+    }
+    pub fn start_auto_dag(&self) -> PyResult<()> {
+        self.miner.start_auto_dag()
+    }
+    pub fn stop_auto_dag(&self) -> PyResult<()> {
+        self.miner.stop_auto_dag()
+    }
+    pub fn inspect(&self) -> PyResult<TxpoolInspect> {
+        self.txpool.inspect()
+    }
+    pub fn status(&self) -> PyResult<TxpoolStatus> {
+        self.txpool.status()
+    }
+    pub fn content(&self) -> PyResult<TxpoolContent> {
+        self.txpool.content()
+    }
+}
+
 #[derive(From, Into)]
 #[pyclass(module = "web3_rush")]
 pub struct GethPersonalHttp(Arc<ethers::providers::Provider<ethers::providers::Http>>);
@@ -723,6 +781,16 @@ impl Web3 {
     pub fn eth(&self) -> PyResult<EthHttp> {
         Ok(EthHttp(self.client.clone()))
     }
+
+    #[getter]
+    pub fn geth(&self) -> PyResult<GethHttp> {
+        Ok(GethHttp {
+            miner: GethMinerHttp(self.client.clone()),
+            admin: GethAdminHttp(self.client.clone()),
+            txpool: GethTxPoolHttp(self.client.clone()),
+        })
+    }
+
     #[getter]
     pub fn net(&self) -> PyResult<NetHttp> {
         Ok(NetHttp(self.client.clone()))

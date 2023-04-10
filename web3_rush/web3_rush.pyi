@@ -1,4 +1,4 @@
-from typing import Optional, Union, TypedDict
+from typing import Dict, Optional, Union, TypedDict
 
 class Web3:
     web3: Web3Module
@@ -204,7 +204,37 @@ class FeeHistory:
     oldest_block: int
     reward: list[list[int]]
 
+class SignedTransaction:
+    raw_transaction: str
+    hash: str
+    r: int
+    s: int
+    v: int
+
+class LocalAccount:
+    address: str
+    chain_id: int
+    def sign_transaction(self, tx: str) -> SignedTransaction: ...
+    def sign_message(self, message: str) -> str: ...
+
+class Account:
+    @staticmethod
+    def create() -> LocalAccount: ...
+    @staticmethod
+    def from_key(private_key: str) -> LocalAccount: ...
+    @staticmethod
+    def sign_message(message: str, private_key: str) -> str: ...
+    @staticmethod
+    def recover_transaction(tx: str) -> str: ...
+    @staticmethod
+    def sign_transaction(tx: str, private_key: str) -> SignedTransaction: ...
+    @staticmethod
+    def decrypt(keyfile_json: dict, password: str) -> str: ...
+    @staticmethod
+    def encrypt(private_key: str, password: str) -> str: ...
+
 class EthModule:
+    account: Account
     accounts: list[str]
     block_number: int
     chain_id: int
@@ -241,3 +271,132 @@ class EthModule:
     def get_balance(self, address: str, block_identifier: Optional[Union[str, int]]) -> int: ...
     def get_code(self, address: str, block_identifier: Optional[Union[str, int]]) -> str: ...
     def get_logs(self, filter: Filter) -> list[Log]: ...
+
+# ***************************************
+# Geth Module
+# ***************************************
+
+class PeerNetworkInfo:
+    local_address: str
+    remote_address: str
+    inbound: bool
+    trusted: bool
+    static: bool
+
+class EthInfo:
+    version: int
+    difficulty: int
+    head: str
+
+class SnapInfo:
+    version: int
+
+class PeerProtocolInfo:
+    eth: Optional[EthInfo]
+    snap: Optional[SnapInfo]
+
+class PeerInfo:
+    enr: Optional[str]
+    enode: str
+    id: str
+    name: str
+    caps: list[str]
+    network: PeerNetworkInfo
+    protocols: PeerProtocolInfo
+
+class Ports:
+    discovery: int
+    listener: int
+
+class ProtocolInfo:
+    eth: Optional[EthProtocolInfo]
+    snap: Optional[SnapProtocolInfo]
+
+class ChainConfig:
+    chain_id: str
+    homestead_block: Optional[int]
+    dao_fork_block: Optional[int]
+    dao_fork_support: bool
+    eip150_block: Optional[int]
+    eip150_hash: Optional[str]
+    eip155_block: Optional[int]
+    eip158_block: Optional[int]
+    byzantium_block: Optional[int]
+    constantinople_block: Optional[int]
+    petersburg_block: Optional[int]
+    istanbul_block: Optional[int]
+    muir_glacier_block: Optional[int]
+    berlin_block: Optional[int]
+    london_block: Optional[int]
+    arrow_glacier_block: Optional[int]
+    gray_glacier_block: Optional[int]
+    merge_netsplit_block: Optional[int]
+    shanghai_time: Optional[int]
+    cancun_time: Optional[int]
+    terminal_total_difficulty: Optional[int]
+    terminal_total_difficulty_passed: bool
+
+class EthProtocolInfo:
+    network: int
+    difficulty: int
+    genesis: str
+    config: ChainConfig
+    head: str
+
+class NodeInfo:
+    id: str
+    name: str
+    enode: str
+    enr: str
+    ip: str
+    ports: Ports
+    listen_addr: str
+    protocols: ProtocolInfo
+
+class TxpoolInspectSummary:
+    to: Optional[str]
+    value: int
+    gas: int
+    gas_price: int
+
+class TxpoolInspect:
+    pending: Dict[str, Dict[str, TxpoolInspectSummary]]
+    queued: Dict[str, Dict[str, TxpoolInspectSummary]]
+
+class TxpoolContent:
+    pending: Dict[str, Dict[str, Transaction]]
+    queued: Dict[str, Dict[str, Transaction]]
+
+class TxpoolStatus:
+    pending: int
+    queued: int
+
+class GethModule:
+    # Miner Sub Module
+    def make_dag(self, block_number: int) -> bool: ...
+    def set_extra(self, extra_data: str): ...
+    def set_gas_price(self, gas_price: int): ...
+    def start(self, num_of_threads: int): ...
+    def stop(self): ...
+    def start_auto_dag(self): ...
+    def stop_auto_dag(self): ...
+    # Admin Sub Module
+    def datadir(self) -> str: ...
+    def add_peer(self, peer: str) -> bool: ...
+    def peers(self) -> list[PeerInfo]: ...
+    def node_info(self) -> list[NodeInfo]: ...
+    def start_http(self) -> bool: ...
+    def start_ws(self) -> bool: ...
+    def stop_http(self) -> bool: ...
+    def stop_ws(self) -> bool: ...
+    # Miner Sub Module
+    def make_dag(self, block_number: int) -> bool: ...
+    def set_extra(self, extra_data: str): ...
+    def set_gas_price(self, gas_price: int): ...
+    def start(self, num_of_threads: int): ...
+    def stop(self): ...
+    def start_auto_dag(self): ...
+    def stop_auto_dag(self): ...
+    def inspect(self) -> TxpoolInspect: ...
+    def status(self) -> TxpoolStatus: ...
+    def content(self) -> TxpoolContent: ...
